@@ -1,18 +1,18 @@
-/*
-  Name: DaRan Software
-  Date: 5 februari 2021
-  Author: Daan Heetkamp
+/**
+ *
+ 	This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 
-  Description:
-  Maak een programma dat drie spelletjes kan laten spelen. Doormiddel van de console.
-
-  Revision: 0.1
-*/
-
-// include libraries
-#include <LiquidCrystal.h>;
-
-// ----- Declare Constants -----
+#include <Arduino.h>
 
 //IO
 #define LEDARRAY_D 2
@@ -24,124 +24,31 @@
 #define LEDARRAY_CLK 8
 #define LEDARRAY_LAT 9
 
-#define	linksKnop 8
-#define rechtsKnop 9
-#define	middenKnop 10
 
-
-// ----- Declare Objects -----
-LiquidCrystal lcd(8, 9, 4, 5, 6, 7);
-
-// ----- Declare subroutines and/or functions -----
 unsigned char Display_Buffer[2];
 
 unsigned int Word1[32];
-int knop;
 
-// ----- Declare Global Variables -----
-
-
-
-// Setup
-void setup()
+//here you'll draw the scene in your screen
+unsigned char  Scene[16][16] =
 {
-  pinMode(LEDARRAY_D, OUTPUT);
-	pinMode(LEDARRAY_C, OUTPUT);
-	pinMode(LEDARRAY_B, OUTPUT);
-	pinMode(LEDARRAY_A, OUTPUT);
-	pinMode(LEDARRAY_G, OUTPUT);
-	pinMode(LEDARRAY_DI, OUTPUT);
-	pinMode(LEDARRAY_CLK, OUTPUT);
-	pinMode(LEDARRAY_LAT, OUTPUT);
-	pinMode(linksKnop, INPUT);
-	pinMode(rechtsKnop, INPUT);
-	pinMode(middenKnop, INPUT);
-
-  Serial.begin(9600);
-  lcd.begin(16,2);
-  lcd.setCursor(0,0);
-
-
-
-	//here you'll draw the scene in your screen
-	unsigned char  Scene[16][16] =
-	{
-		{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
-		{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
-		{1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 1, 1},
-		{1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 1, 1},
-		{1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 0, 1, 1},
-		{1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 0, 1, 1},
-		{1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 0, 1, 1},
-		{1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 0, 1, 1},
-		{1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 0, 1, 1, 0, 1, 1},
-		{1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 0, 1, 1},
-		{1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 0, 1, 1},
-		{1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 1, 1},
-		{1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 1, 1},
-		{1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 0, 1, 1},
-		{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
-		{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
-	};
-
-}
-
-// Main loop
-void loop()
-{
- update();
- Display(Word1);
-
-	if (rechtsKnop == true)
-	{
-		knop = 1
-	}
-	else if (linksKnop == true)
-	{
-		knop = 2
-	}
-	else if (middenKnop == true)
-	{
-		knop = 3
-	}
-
-
-	switch (knop)
-	{
-		case 1:
-		{
-			lcd.display("Rechterknop");
-
-		}
-
-		case 2:
-		{
-			lcd.display("Linkerknop");
-		}
-
-		case 3:
-		{
-			lcd.display("Selecteer Knop");
-		}
-	}
-}
-
-
-
-
-
-
-
-
-void update(){
-	clearWord();
-	SceneToWord();
-}
-
-void clearWord(){
-	for(int i = 0; i < 32; i++)
-		Word1[i] = 0;
-}
+	{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
+	{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
+	{1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 1, 1},
+	{1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 1, 1},
+	{1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 0, 1, 1},
+	{1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 0, 1, 1},
+	{1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 0, 1, 1},
+	{1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 0, 1, 1},
+	{1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 0, 1, 1, 0, 1, 1},
+	{1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 0, 1, 1},
+	{1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 0, 1, 1},
+	{1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 1, 1},
+	{1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 1, 1},
+	{1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 0, 1, 1},
+	{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
+	{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
+};
 
 void SceneToWord(){
 	int i, k, key = 0;
@@ -159,7 +66,21 @@ void SceneToWord(){
 	}
 }
 
+void setup() {
+	pinMode(LEDARRAY_D, OUTPUT);
+	pinMode(LEDARRAY_C, OUTPUT);
+	pinMode(LEDARRAY_B, OUTPUT);
+	pinMode(LEDARRAY_A, OUTPUT);
+	pinMode(LEDARRAY_G, OUTPUT);
+	pinMode(LEDARRAY_DI, OUTPUT);
+	pinMode(LEDARRAY_CLK, OUTPUT);
+	pinMode(LEDARRAY_LAT, OUTPUT);
+	Serial.begin(9600);
+}
 
+//************************************************************
+
+//*************************************************************
 void Display(unsigned int dat[])	{
 	unsigned char i;
 
@@ -188,6 +109,9 @@ void Display(unsigned int dat[])	{
 }
 
 
+//****************************************************
+
+//****************************************************
 void Scan_Line( unsigned int m) {
 	switch(m)
 	{
@@ -243,7 +167,9 @@ void Scan_Line( unsigned int m) {
 	}
 }
 
+//****************************************************
 
+//****************************************************
 void Send( unsigned int dat) {
 	unsigned char i;
 	digitalWrite(LEDARRAY_CLK, LOW);
@@ -270,4 +196,21 @@ void Send( unsigned int dat) {
 		dat >>= 1;
 
 	}
+}
+
+
+
+void loop() {
+	update();
+	Display(Word1);
+}
+
+void update(){
+	clearWord();
+	SceneToWord();
+}
+
+void clearWord(){
+	for(int i = 0; i < 32; i++)
+		Word1[i] = 0;
 }
