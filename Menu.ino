@@ -7,6 +7,9 @@
   Maak een programma dat drie spelletjes kan laten spelen. Doormiddel van de console.
 
   Revision: 0.1
+
+Te doen:
+1: Programma maken voor de PT100 en de LDR. analogRead() gaat van 0 tot 5V
 */
 
 // include libraries
@@ -19,6 +22,8 @@
 #define knopR 1
 #define knopL 2
 #define knopM 3
+#define LDR
+#define PT100
 
 
 
