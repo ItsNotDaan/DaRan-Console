@@ -118,8 +118,7 @@ void Scan_Line( unsigned int m) {
 		case 0:
 			digitalWrite(LEDARRAY_D, LOW);digitalWrite(LEDARRAY_C, LOW);digitalWrite(LEDARRAY_B, LOW);digitalWrite(LEDARRAY_A, LOW);
 			break;
-		case 1:
-			digitalWrite(LEDARRAY_D, LOW);digitalWrite(LEDARRAY_C, LOW);digitalWrite(LEDARRAY_B, LOW);digitalWrite(LEDARRAY_A, HIGH);
+		case 1:atom://teletype/portal/4169b6f1-b8ff-40f5-a77f-14a4e75eb54aLOW);digitalWrite(LEDARRAY_A, HIGH);
 			break;
 		case 2:
 			digitalWrite(LEDARRAY_D, LOW);digitalWrite(LEDARRAY_C, LOW);digitalWrite(LEDARRAY_B, HIGH);digitalWrite(LEDARRAY_A, LOW);
