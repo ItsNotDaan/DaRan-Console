@@ -268,10 +268,10 @@ void loop()
     {
       if (adress != loser)
       {
-        pressedYes = adress
+        pressedYes = adress;
         if (randomTimer != i)
         {
-          pressedYes = loser
+          pressedYes = loser;
         }
         else if (randomTimer == i)
         {
