@@ -240,35 +240,3 @@ void loop()
   }
 }
 */
-
-#include <Wire.h>
-
-#define Buzzer
-#define Led
-
-Long randomTimer
-int countdown
-
-void setup()
-{
-  Serial.begin(9600);
-  // hier komt welkom / naam van de spel
-  // aantal mensen die spel
- Led.clear();
-}
-
-void loop()
-{
-  randomTimer = random(3, 20); //random nummer pakken
-
-  for (int i = 0; i < randomTimerrandomTimer; i++)
-  {
-    countdown = randomTimer - i;
-  }
-  if (countdown == -1)
-  {
-    digital.Read(Buzzer, HIGH);
-    // scherm adere kleur
-
-  }
-}
