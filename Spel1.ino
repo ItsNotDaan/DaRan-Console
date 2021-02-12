@@ -261,10 +261,33 @@ void loop()
 {
   randomTimer = random(3, 20); //random nummer pakken
 
-  for (int i = 0; i < randomTimerrandomTimer; i++)
+  for (int i = 0; i < randomTimer; i++)
   {
-    countdown = randomTimer - i;
+
+    if (adress == true) //adres van reciever binnen? wss een
+    {
+      if (adress != loser)
+      {
+        pressedYes = adress
+        if (randomTimer != i)
+        {
+          pressedYes = loser
+        }
+        else if (randomTimer == i)
+        {
+          // stuur alle controllers een signaal van rumble van 2 seconden.
+          //stuur pressedYes een rumble signaal van 5 seconden
+          //laat zien wie heeft gewonnen + animatie op lcd
+          loser = 0;
+          randomTimer = 0;
+          pressedYes = 0;
+        }
+      }
+    }
+
+    delay(1000);
   }
+
   if (countdown == -1)
   {
     digital.Read(Buzzer, HIGH);
