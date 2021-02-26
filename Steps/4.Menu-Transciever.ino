@@ -47,6 +47,7 @@ bool activeren = LOW; //hiermee laat het programma weten dat een spel moet gaan 
 bool isGedrukt = LOW;
 bool inf = true;
 int temp;
+unsigned long laatsteTijd = 0; //Laatste tijd. Is nodig om timers te maken.
 String light;
 int LDR = A0;
 int PT100 = A1;
@@ -209,16 +210,16 @@ void menu()
        {
          if (radio.available()) //als er iets binnenkomt.
          {
-           char in = {0} //maak een char genaamd "in".
+           char in = {0}; //maak een char genaamd "in".
            radio.read(&text, sizeof(text)); //alles dat wordt ingelezen wordt opgeslagen in de char text.
-           Serial.print(text);
+           Serial.println(text);
 
          }
-         digitalWrite(led) = HIGH; //kijken of het werkt
+         digitalWrite(led, HIGH);
        }
 
 
-       digitalWrite(led) = LOW;
+       digitalWrite(led, LOW);
        delay(1000);
        aantalDrukken = 1;
        lcd.clear();
