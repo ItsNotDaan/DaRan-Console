@@ -26,8 +26,9 @@
 #define led 6
 
 //Dit is het adressen waar naar verzonden/ontvangen wordt.
-const byte control1[6] = "00001"; //controller 1
-const byte control2[6] = "00002"; //controller 2
+const byte hub[6] = "00001"; //hub
+const byte control1[6] = "00002"; //controller 1
+const byte control2[6] = "00003"; //controller 2
 
 
 // ----- Declare Objects -----
@@ -46,6 +47,7 @@ bool activeren = LOW; //hiermee laat het programma weten dat een spel moet gaan 
 bool isGedrukt = LOW;
 bool inf = true;
 int temp;
+unsigned long laatsteTijd = 0; //Laatste tijd. Is nodig om timers te maken.
 String light;
 int LDR = A0;
 int PT100 = A1;
@@ -193,10 +195,31 @@ void menu()
        radio.write(&text, sizeof(text)); //init om te verzenden naar controller 2
        //controllers weten nu dat spel 1 is gestart en nu moet er voor 10 seconden worden geluisterd.
 
-       int timer =  millis();
+       radio.startListening();
+       radio.openReadingPipe(0, hub);
+
+       //(11 - 10 = 1) < 10000 =  true
+       //(12 - 10 = 2) < 10000 = true
+       //.....
+       //(10010 - 10 = 10000) =< 10000 = true
+       //(10011 - 10 = 10001) =< 10000 = false dus doorgaan.
+
+       unsigned long tijdTimer = 10000; //10 seconden wachten.
+       unsigned long huidigeTijd = millis(); //tijd hoelang het programma al draait. Long omdat het om tijd gaat
+       while (millis() - huidigeTijd < tijdTimer) //doe 10 seconden alles wat in de while staat.
+       {
+         if (radio.available()) //als er iets binnenkomt.
+         {
+           char in = {0} //maak een char genaamd "in".
+           radio.read(&text, sizeof(text)); //alles dat wordt ingelezen wordt opgeslagen in de char text.
+           Serial.print(text);
+
+         }
+         digitalWrite(led) = HIGH;
+       }
 
 
-
+       digitalWrite(led) = LOW;
        delay(1000);
        aantalDrukken = 1;
        lcd.clear();
