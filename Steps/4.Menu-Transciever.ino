@@ -183,11 +183,18 @@ void menu()
        lcd.print("  game 1 actief ");
 
        radio.begin(); //start de zender
-       radio.openWritingPipe(control1); //init waar de zender naartoe moet verzenden.
        radio.stopListening(); //door te stoppen met luisteren wordt het een zender.
+       const char text[] = "1"; //maak een array met karakters genaamd text. Stop hierin "1".
 
-       const char text[] = "Programma 1 is actief"; //maak een array met karakters genaamd text. Stop hierin "Hello World".
+       radio.openWritingPipe(control1); //init om te verzenden naar controller 1
        radio.write(&text, sizeof(text)); //verstuur de data in de text.
+
+       radio.openWritingPipe(control2); //init waar de zender naartoe moet verzenden.
+       radio.write(&text, sizeof(text)); //init om te verzenden naar controller 2
+       //controllers weten nu dat spel 1 is gestart en nu moet er voor 10 seconden worden geluisterd.
+
+       int timer =  millis();
+
 
 
        delay(1000);
@@ -212,6 +219,14 @@ void menu()
        Serial.print("\n");
        lcd.setCursor(0,2);
        lcd.print("  game 2 actief ");
+
+       radio.begin(); //start de zender
+       radio.openWritingPipe(control1); //init waar de zender naartoe moet verzenden.
+       radio.stopListening(); //door te stoppen met luisteren wordt het een zender.
+
+       const char text[] = "2"; //maak een array met karakters genaamd text. Stop hierin "Hello World".
+       radio.write(&text, sizeof(text)); //verstuur de data in de text.
+
        delay(1000);
        aantalDrukken = 1;
        lcd.clear();
@@ -234,6 +249,14 @@ void menu()
        Serial.print("\n");
        lcd.setCursor(0,2);
        lcd.print("  game 3 actief ");
+
+       radio.begin(); //start de zender
+       radio.openWritingPipe(control1); //init waar de zender naartoe moet verzenden.
+       radio.stopListening(); //door te stoppen met luisteren wordt het een zender.
+
+       const char text[] = "3"; //maak een array met karakters genaamd text. Stop hierin "Hello World".
+       radio.write(&text, sizeof(text)); //verstuur de data in de text.
+
        delay(1000);
        aantalDrukken = 1;
        lcd.clear();
