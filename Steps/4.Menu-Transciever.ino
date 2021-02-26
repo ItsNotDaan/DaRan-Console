@@ -47,7 +47,6 @@ bool activeren = LOW; //hiermee laat het programma weten dat een spel moet gaan 
 bool isGedrukt = LOW;
 bool inf = true;
 int temp;
-unsigned long laatsteTijd = 0; //Laatste tijd. Is nodig om timers te maken.
 String light;
 int LDR = A0;
 int PT100 = A1;
@@ -215,7 +214,7 @@ void menu()
            Serial.print(text);
 
          }
-         digitalWrite(led) = HIGH;
+         digitalWrite(led) = HIGH; //kijken of het werkt
        }
 
 
