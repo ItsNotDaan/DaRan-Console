@@ -6,7 +6,7 @@
   Description:
   Maak een programma dat kan switchen tussen 4 standen
 
-  Revision: 0.1
+  Revision: 0.3
 
 */
 

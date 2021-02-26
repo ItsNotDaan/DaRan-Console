@@ -1,6 +1,6 @@
 /*
   Name: DaRan Software
-  Date: 5 februari 2021
+  Date: 26 februari 2021
   Author: Daan Heetkamp
 
   Description:
@@ -13,6 +13,10 @@
 // include libraries
 #include <Wire.h>
 #include <LiquidCrystal_I2C.h>
+//voor transciever
+#include <SPI.h>
+#include <nRF24L01.h>
+#include <RF24.h>
 
 // ----- Declare Constants -----
 
@@ -21,11 +25,14 @@
 #define knopM 4
 #define led 6
 
-
+//Dit is het adressen waar naar verzonden/ontvangen wordt.
+const byte control1[6] = "00001"; //controller 1
+const byte control2[6] = "00002"; //controller 2
 
 
 // ----- Declare Objects -----
-LiquidCrystal_I2C lcd(0x27, 2, 1, 0, 4, 5, 6, 7, 3, POSITIVE);
+LiquidCrystal_I2C lcd(0x27, 2, 1, 0, 4, 5, 6, 7, 3, POSITIVE); //voor lcd
+RF24 radio(9, 8);  // CE, CSN Dit is nodig voor de library om te kijken welke pinnen de zender is aangesloten.
 
 // ----- Declare subroutines and/or functions -----
 
@@ -172,10 +179,17 @@ void menu()
 
       if(activeren == HIGH)
       {
-       Serial.print("2 actief");
-       Serial.print("\n");
        lcd.setCursor(0,2);
        lcd.print("  game 1 actief ");
+
+       radio.begin(); //start de zender
+       radio.openWritingPipe(control1); //init waar de zender naartoe moet verzenden.
+       radio.stopListening(); //door te stoppen met luisteren wordt het een zender.
+
+       const char text[] = "Programma 1 is actief"; //maak een array met karakters genaamd text. Stop hierin "Hello World".
+       radio.write(&text, sizeof(text)); //verstuur de data in de text.
+
+
        delay(1000);
        aantalDrukken = 1;
        lcd.clear();
