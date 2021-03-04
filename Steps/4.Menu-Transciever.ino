@@ -26,10 +26,10 @@
 #define led 6
 
 //Dit is het adressen waar naar verzonden/ontvangen wordt.
-const byte hub[6] = "00001"; //hub
-const byte control1[6] = "00002"; //controller 1
-const byte control2[6] = "00003"; //controller 2
-
+const byte address[][6] = {"00001", "00002","00003"};
+//00001 = De hub
+//00002 = Controller 1
+//00003 = Controller 2
 
 // ----- Declare Objects -----
 LiquidCrystal_I2C lcd(0x27, 2, 1, 0, 4, 5, 6, 7, 3, POSITIVE); //voor lcd
@@ -62,6 +62,11 @@ void setup()
   pinMode(PT100, INPUT);
   pinMode(led, OUTPUT);
   Serial.begin(9600);
+  radio.begin(); //start de zender
+
+  //radio.openWritingPipe(address[0])//het apparaat dat schrijft.
+  //radio.openReadingPipe(1, address[1]); //adres dat ook in de constant werd aangegeven. Lezen
+  //radio.openReadingPipe(2, address[2]); //adres dat ook in de constant werd aangegeven. Lezen
 
   lcd.begin(16,2);
   lcd.home();
@@ -184,35 +189,47 @@ void menu()
        lcd.setCursor(0,2);
        lcd.print("  game 1 actief ");
 
-       radio.begin(); //start de zender
        radio.stopListening(); //door te stoppen met luisteren wordt het een zender.
        const char text[] = "1"; //maak een array met karakters genaamd text. Stop hierin "1".
 
-       radio.openWritingPipe(control1); //init om te verzenden naar controller 1
+       radio.openWritingPipe(address[1]); //init om te verzenden naar controller 1
        radio.write(&text, sizeof(text)); //verstuur de data in de text.
 
-       radio.openWritingPipe(control2); //init waar de zender naartoe moet verzenden.
+       radio.openWritingPipe(address[2]); //init waar de zender naartoe moet verzenden.
        radio.write(&text, sizeof(text)); //init om te verzenden naar controller 2
        //controllers weten nu dat spel 1 is gestart en nu moet er voor 10 seconden worden geluisterd.
 
+       radio.openReadingPipe(1, address[1]); //luister naar control1
+       radio.openReadingPipe(2, address[2]); //luister naar control2
        radio.startListening();
-       radio.openReadingPipe(0, hub);
 
        //(11 - 10 = 1) < 10000 =  true
        //(12 - 10 = 2) < 10000 = true
        //.....
        //(10010 - 10 = 10000) =< 10000 = true
        //(10011 - 10 = 10001) =< 10000 = false dus doorgaan.
-
+       unsigned char adr;
        unsigned long tijdTimer = 10000; //10 seconden wachten.
        unsigned long huidigeTijd = millis(); //tijd hoelang het programma al draait. Long omdat het om tijd gaat
        while (millis() - huidigeTijd < tijdTimer) //doe 10 seconden alles wat in de while staat.
        {
-         if (radio.available()) //als er iets binnenkomt.
+         if (radio.available(adr)) //als er iets binnenkomt.
          {
-           char in = {0}; //maak een char genaamd "in".
-           radio.read(&text, sizeof(text)); //alles dat wordt ingelezen wordt opgeslagen in de char text.
-           Serial.println(text);
+           float in; //maak een char genaamd "in
+           radio.read(&in, sizeof(in)); //alles dat wordt ingelezen wordt opgeslagen in de char text.
+           Serial.println(in);
+
+           if (adr == 1)
+           {
+             Serial.println("Dit is controller 1");
+           }
+           else if (adr == 2)
+           {
+             Serial.println("Dit is controller 2");
+           }
+           else {
+             Serial.println("controller niet gevonden");
+           }
 
          }
          digitalWrite(led, HIGH);
