@@ -18,8 +18,9 @@
 #define knop 6
 
 // ----- Declare Constants -----
-const byte hub[6] = "00001"; //Dit is het adres van de hub.
-const byte contr[6] = "00002"; //Dit is het adres van deze controller
+//const byte hub[6] = //"00001"; //Dit is het adres van de hub.
+//const byte contr[6] = //"00002"; //Dit is het adres van deze controller
+const byte address[][6] = {"00001", "00002"};
 
 // ----- Declare Objects -----
 RF24 radio(9, 8);  // CE, CSN. Dit is nodig voor de librarie om te kijken welke pin de ontvanger is aangesloten.
@@ -40,7 +41,8 @@ void setup()
   Serial.begin(9600); //Start een seriele verbinding.
 
   radio.begin(); //zorg dat de radio begint met luisteren
-  radio.openReadingPipe(0, contr); //adres dat ook in de constant werd aangegeven.
+  radio.openReadingPipe(1, address[0]); //adres dat ook in de constant werd aangegeven. Lezen
+  radio.openWritingPipe(address[1]); //adres dat ook in de constant werd aangegeven.Schrijven
   radio.startListening(); //dit is een ontvanger. .startSending is een zender.
 }
 
@@ -69,14 +71,13 @@ void loop()
       unsigned long huidigeTijd = millis(); //tijd hoelang het programma al draait. Long omdat het om tijd gaat
       while (millis() - huidigeTijd < tijdTimer) //doe 10 seconden alles wat in de while staat.
       {
-        if (millis() - huidigeTijd > 5000)
+        if (millis() - huidigeTijd > 8000)
         {
             tone(buzz, 2000);
         }
         if (digitalRead(knop) == HIGH && isGedrukt == LOW) //Als de knop wordt geklikt.
         {
           radio.stopListening(); //door te stoppen met luisteren wordt het een zender
-          radio.openWritingPipe(hub);
           const char in[] = "1"; //maak een array met karakters genaamd text. Stop hierin "1".
           radio.write(&in, sizeof(in)); //data die in 'in' staat wordt verstuurd.
 
