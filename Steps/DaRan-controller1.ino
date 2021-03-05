@@ -71,7 +71,7 @@ void loop()
       unsigned long huidigeTijd = millis(); //tijd hoelang het programma al draait. Long omdat het om tijd gaat
       while (millis() - huidigeTijd < tijdTimer) //doe 10 seconden alles wat in de while staat.
       {
-        if (millis() - huidigeTijd > 5000)
+        if (millis() - huidigeTijd > 8000)
         {
             tone(buzz, 2000);
         }
