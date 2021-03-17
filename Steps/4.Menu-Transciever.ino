@@ -260,8 +260,8 @@ void menu()
        lcd.setCursor(0,2);
        lcd.print("  game 2 actief ");
 
-       radio.begin(); //start de zender
-       radio.openWritingPipe(control1); //init waar de zender naartoe moet verzenden.
+       //radio.begin(); //start de zender
+       //radio.openWritingPipe(control1); //init waar de zender naartoe moet verzenden.
        radio.stopListening(); //door te stoppen met luisteren wordt het een zender.
 
        const char text[] = "2"; //maak een array met karakters genaamd text. Stop hierin "Hello World".
@@ -290,8 +290,8 @@ void menu()
        lcd.setCursor(0,2);
        lcd.print("  game 3 actief ");
 
-       radio.begin(); //start de zender
-       radio.openWritingPipe(control1); //init waar de zender naartoe moet verzenden.
+       //radio.begin(); //start de zender
+       //radio.openWritingPipe(control1); //init waar de zender naartoe moet verzenden.
        radio.stopListening(); //door te stoppen met luisteren wordt het een zender.
 
        const char text[] = "3"; //maak een array met karakters genaamd text. Stop hierin "Hello World".
