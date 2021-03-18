@@ -63,7 +63,7 @@ void loop()
     if (text[0] == '1')//is de binnengekomen text '1'? Spel 1 start.
     {
       Serial.println("Game 1");
-
+//Dit kan dus niet, hij moet wachten hiero. Anders gaat die verder
       if (digitalRead(knop) == HIGH && isGedrukt == LOW) //Als de knop wordt geklikt.
       {
         radio.stopListening(); //door te stoppen met luisteren wordt het een zender
