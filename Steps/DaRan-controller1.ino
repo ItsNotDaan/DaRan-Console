@@ -7,7 +7,7 @@
   Zorg dat er met deze code data kan worden ontvangen.
 
   Revision:
-  0.1
+  2.0
 
 */
 
@@ -18,9 +18,8 @@
 #define knop 6
 
 // ----- Declare Constants -----
-//const byte hub[6] = //"00001"; //Dit is het adres van de hub.
-//const byte contr[6] = //"00002"; //Dit is het adres van deze controller
-const byte address[][6] = {"00001", "00002"};
+const byte hub[6] = "00001"; //Dit is het adres van de hub.
+const byte con1[6] = "00002"; //Dit is het adres van deze controller
 
 // ----- Declare Objects -----
 RF24 radio(9, 8);  // CE, CSN. Dit is nodig voor de librarie om te kijken welke pin de ontvanger is aangesloten.
@@ -30,7 +29,7 @@ RF24 radio(9, 8);  // CE, CSN. Dit is nodig voor de librarie om te kijken welke 
 // ----- Declare Global Variables -----
 const int buzz = 7; //const maakt een read only
 bool isGedrukt = LOW;
-
+unsigned char adr;
 
 // Setup
 void setup()
@@ -41,8 +40,9 @@ void setup()
   Serial.begin(9600); //Start een seriele verbinding.
 
   radio.begin(); //zorg dat de radio begint met luisteren
-  radio.openReadingPipe(1, address[0]); //adres dat ook in de constant werd aangegeven. Lezen
-  radio.openWritingPipe(address[1]); //adres dat ook in de constant werd aangegeven.Schrijven
+  radio.openReadingPipe(1, hub); //adres dat ook in de constant werd aangegeven. Lezen
+  //radio.openWritingPipe(con1); //adres dat ook in de constant werd aangegeven.Schrijven
+  radio.openWritingPipe(con1);
   radio.startListening(); //dit is een ontvanger. .startSending is een zender.
 }
 
@@ -53,12 +53,14 @@ void loop()
  // {
  //   Serial.println("Knop");
  // }
-
   if (radio.available()) //als er iets binnenkomt.
   {
-    char text = {0}; //maak een array genaamd tekst waar 32 chars in kunnen. de {0} is om hem leeg te hebben. Er zijn dus 32 karakters met een 0.
+    //Serial.println(adr);
+    char text[] = {0}; //maak een array met karakters genaamd text. Stop hierin "1".
     radio.read(&text, sizeof(text)); //alles dat wordt ingelezen wordt opgeslagen in de char text.
-    if (text == '1')//is de binnengekomen text "1"?
+    Serial.println(text);
+
+    if (text[0] == '1')//is de binnengekomen text '1'?
     {
       Serial.println("text = 1");
       //(11 - 10 = 1) < 10000 =  true
@@ -73,30 +75,31 @@ void loop()
       {
         if (millis() - huidigeTijd > 8000)
         {
-            tone(buzz, 2000);
+            //tone(buzz, 2000);
         }
         if (digitalRead(knop) == HIGH && isGedrukt == LOW) //Als de knop wordt geklikt.
         {
           radio.stopListening(); //door te stoppen met luisteren wordt het een zender
-          const char in[] = "1"; //maak een array met karakters genaamd text. Stop hierin "1".
+          const char in[] = "1"; //maak een array met karakters genaamd in. Stop hierin "1".
           radio.write(&in, sizeof(in)); //data die in 'in' staat wordt verstuurd.
-
-          isGedrukt == HIGH;
+          radio.startListening();
+          isGedrukt = HIGH;
         }
       }
+      isGedrukt = LOW;
       noTone(buzz);
     }
 
-    else if (text == '2')
+    else if (text == 2)
     {
       tone(buzz, 1000);
     }
 
-    else if (text == '3')
+    else if (text == 3)
     {
       tone(buzz, 1500);
     }
-    Serial.println(text); //text wordt gescgrevcen in de seriele monitor.
+    //Serial.println(text); //text wordt gescgrevcen in de seriele monitor.
     //Serial.println(buz); //text wordt gescgrevcen in de seriele monitor.
     delay(1000);
     noTone(buzz);

@@ -6,7 +6,7 @@
   Description:
   Maak een programma dat drie spelletjes kan laten spelen. Doormiddel van de console.
 
-  Revision: 0.1
+  Revision: 3.0
 
 */
 
@@ -26,7 +26,10 @@
 #define led 6
 
 //Dit is het adressen waar naar verzonden/ontvangen wordt.
-const byte address[][6] = {"00001", "00002","00003"};
+//const byte address[][6] = {"00001", "00002","00003"};
+const byte hub[6] = "00001"; //Dit is het adress waar naar verzonden wordt.
+const byte con1[6] = "00002"; //Dit is het adress waar naar verzonden wordt.
+const byte con2[6] = "00003"; //Dit is het adress waar naar verzonden wordt.
 //00001 = De hub
 //00002 = Controller 1
 //00003 = Controller 2
@@ -64,10 +67,10 @@ void setup()
   Serial.begin(9600);
   radio.begin(); //start de zender
 
-  //radio.openWritingPipe(address[0])//het apparaat dat schrijft.
-  //radio.openReadingPipe(1, address[1]); //adres dat ook in de constant werd aangegeven. Lezen
+  radio.openReadingPipe(1, con1); //adres dat ook in de constant werd aangegeven. Lezen
   //radio.openReadingPipe(2, address[2]); //adres dat ook in de constant werd aangegeven. Lezen
-
+  radio.openWritingPipe(hub);//het apparaat dat schrijft.
+  radio.startListening();
   lcd.begin(16,2);
   lcd.home();
 
@@ -137,7 +140,7 @@ void menu()
       //lcd.print("Temp: ..C  Night");
 
       lcd.setCursor(6,2);
-      tmp();
+      //tmp();
       lcd.print(temp); //gaat heel snel. Later oplossing voorbedenken.
       if (temp < 10) {
         lcd.setCursor(8,2);
@@ -190,17 +193,17 @@ void menu()
        lcd.print("  game 1 actief ");
 
        radio.stopListening(); //door te stoppen met luisteren wordt het een zender.
-       const char text[] = "1"; //maak een array met karakters genaamd text. Stop hierin "1".
+       char text[] = "1"; //maak een array met karakters genaamd text. Stop hierin "1".
 
-       radio.openWritingPipe(address[1]); //init om te verzenden naar controller 1
+       //radio.openWritingPipe(con1); //init om te verzenden naar controller 1
        radio.write(&text, sizeof(text)); //verstuur de data in de text.
 
-       radio.openWritingPipe(address[2]); //init waar de zender naartoe moet verzenden.
-       radio.write(&text, sizeof(text)); //init om te verzenden naar controller 2
+       //radio.openWritingPipe(con2); //init waar de zender naartoe moet verzenden.
+       //radio.write(&text, sizeof(text)); //init om te verzenden naar controller 2
        //controllers weten nu dat spel 1 is gestart en nu moet er voor 10 seconden worden geluisterd.
 
-       radio.openReadingPipe(1, address[1]); //luister naar control1
-       radio.openReadingPipe(2, address[2]); //luister naar control2
+       //radio.openReadingPipe(1, con1); //luister naar control1
+       //radio.openReadingPipe(2, con2); //luister naar control2
        radio.startListening();
 
        //(11 - 10 = 1) < 10000 =  true
@@ -213,17 +216,17 @@ void menu()
        unsigned long huidigeTijd = millis(); //tijd hoelang het programma al draait. Long omdat het om tijd gaat
        while (millis() - huidigeTijd < tijdTimer) //doe 10 seconden alles wat in de while staat.
        {
-         if (radio.available(adr)) //als er iets binnenkomt.
+         if (radio.available()) //als er iets binnenkomt.
          {
-           float in; //maak een char genaamd "in
-           radio.read(&in, sizeof(in)); //alles dat wordt ingelezen wordt opgeslagen in de char text.
-           Serial.println(in);
+           char text[] = {0};
+           radio.read(&text, sizeof(text)); //alles dat wordt ingelezen wordt opgeslagen in de char text.
+           //Serial.println(text);
 
-           if (adr == 1)
+           if (text[0] == '1')
            {
              Serial.println("Dit is controller 1");
            }
-           else if (adr == 2)
+           else if (text[0] == '2')
            {
              Serial.println("Dit is controller 2");
            }
@@ -260,8 +263,8 @@ void menu()
        lcd.setCursor(0,2);
        lcd.print("  game 2 actief ");
 
-       radio.begin(); //start de zender
-       radio.openWritingPipe(control1); //init waar de zender naartoe moet verzenden.
+       //radio.begin(); //start de zender
+       //radio.openWritingPipe(control1); //init waar de zender naartoe moet verzenden.
        radio.stopListening(); //door te stoppen met luisteren wordt het een zender.
 
        const char text[] = "2"; //maak een array met karakters genaamd text. Stop hierin "Hello World".
@@ -290,8 +293,8 @@ void menu()
        lcd.setCursor(0,2);
        lcd.print("  game 3 actief ");
 
-       radio.begin(); //start de zender
-       radio.openWritingPipe(control1); //init waar de zender naartoe moet verzenden.
+       //radio.begin(); //start de zender
+       //radio.openWritingPipe(control1); //init waar de zender naartoe moet verzenden.
        radio.stopListening(); //door te stoppen met luisteren wordt het een zender.
 
        const char text[] = "3"; //maak een array met karakters genaamd text. Stop hierin "Hello World".
@@ -311,10 +314,17 @@ void menu()
 void tmp()
 {
   temp = analogRead(PT100);
+  Serial.print(temp);
+  Serial.print("\n");
+  //Serial.println(PT100);
+  //Serial.println("in2 ");
+  //Serial.print(temp);
   // 0-5V komt binnen. 0= 0 graden en 5 = 100 graden. 5V is 1023.
   //om de waardes terug te brengen naar voltage moet er een berekening gedaan worden.
-  float a = temp * (100 / 1023.0); //nu wordt de waarde van 1023 veranderd naar 0-100C
+  float a = temp * (5 / 1023.0); //nu wordt de waarde van 1023 veranderd naar 0-100C
   temp = round(a);
+ // Serial.println("Temp ");
+  //Serial.print(temp);
   return temp;
 }
 
@@ -322,7 +332,7 @@ String lght()
 {
   int a = analogRead(LDR);
   //Serial.print(a);
-  //Serial.print("\n");
+ // Serial.print("\n");
   if (a <= 10) //ligt eraan hoe aangesloten. Kan ook boven de 1000 zijn.
   {
     light = "Night";
