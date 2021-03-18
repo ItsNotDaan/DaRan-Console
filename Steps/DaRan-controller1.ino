@@ -7,7 +7,7 @@
   Zorg dat er met deze code data kan worden ontvangen.
 
   Revision:
-  2.0
+  3.0
 
 */
 
@@ -60,7 +60,22 @@ void loop()
     radio.read(&text, sizeof(text)); //alles dat wordt ingelezen wordt opgeslagen in de char text.
     Serial.println(text);
 
-    if (text[0] == '1')//is de binnengekomen text '1'?
+    if (text[0] == '1')//is de binnengekomen text '1'? Spel 1 start.
+    {
+      Serial.println("Game 1");
+
+      if (digitalRead(knop) == HIGH && isGedrukt == LOW) //Als de knop wordt geklikt.
+      {
+        radio.stopListening(); //door te stoppen met luisteren wordt het een zender
+        const char in[] = "1"; //maak een array met karakters genaamd in. Stop hierin "1".
+        radio.write(&in, sizeof(in)); //data die in 'in' staat wordt verstuurd.
+        radio.startListening();
+        isGedrukt = HIGH;
+      }
+      isGedrukt = LOW;
+    }
+
+    else if (text == 2)
     {
       Serial.println("text = 1");
       //(11 - 10 = 1) < 10000 =  true
@@ -88,11 +103,6 @@ void loop()
       }
       isGedrukt = LOW;
       noTone(buzz);
-    }
-
-    else if (text == 2)
-    {
-      tone(buzz, 1000);
     }
 
     else if (text == 3)
