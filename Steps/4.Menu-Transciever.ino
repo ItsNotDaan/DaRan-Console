@@ -6,7 +6,7 @@
   Description:
   Maak een programma dat drie spelletjes kan laten spelen. Doormiddel van de console.
 
-  Revision: 3.0
+  Revision: 4.0
 
 */
 
@@ -48,7 +48,6 @@ int laatsteDruk = 1; // laatste case
 int gedrukt = 1;
 bool activeren = LOW; //hiermee laat het programma weten dat een spel moet gaan beginnen.
 bool isGedrukt = LOW;
-bool inf = true;
 int temp;
 unsigned long laatsteTijd = 0; //Laatste tijd. Is nodig om timers te maken.
 String light;
@@ -172,13 +171,15 @@ void menu()
        lcd.setCursor(0,2);
        lcd.print("Press right/left");
        delay(2000);
-       aantalDrukken = 1;
+       aantalDrukken = 1; //terug naar start Menu
        lcd.clear();
        activeren = LOW;
       }
       break;
 
-      case 2:
+/************************************************************************************************/
+
+      case 2: //fastest presser
       Serial.print("Menu 2");
       Serial.print("\n");
 
@@ -189,65 +190,101 @@ void menu()
 
       if(activeren == HIGH)
       {
-       lcd.setCursor(0,2);
-       lcd.print("  game 1 actief ");
+        lcd.setCursor(0,0);
+        lcd.print("Fastest Presser ");
+        lcd.setCursor(0,2);
+        lcd.print("     Active     ");
 
-       radio.stopListening(); //door te stoppen met luisteren wordt het een zender.
-       char text[] = "1"; //maak een array met karakters genaamd text. Stop hierin "1".
+        radio.stopListening(); //door te stoppen met luisteren wordt het een zender.
 
-       //radio.openWritingPipe(con1); //init om te verzenden naar controller 1
-       radio.write(&text, sizeof(text)); //verstuur de data in de text.
+        char text[] = "1"; //maak een array met karakters genaamd text. Stop hierin "1".
+        radio.write(&text, sizeof(text)); //verstuur de data in de text.
 
-       //radio.openWritingPipe(con2); //init waar de zender naartoe moet verzenden.
-       //radio.write(&text, sizeof(text)); //init om te verzenden naar controller 2
-       //controllers weten nu dat spel 1 is gestart en nu moet er voor 10 seconden worden geluisterd.
+        radio.startListening();
 
-       //radio.openReadingPipe(1, con1); //luister naar control1
-       //radio.openReadingPipe(2, con2); //luister naar control2
-       radio.startListening();
-
-       //(11 - 10 = 1) < 10000 =  true
-       //(12 - 10 = 2) < 10000 = true
-       //.....
-       //(10010 - 10 = 10000) =< 10000 = true
-       //(10011 - 10 = 10001) =< 10000 = false dus doorgaan.
-       unsigned char adr;
-       unsigned long tijdTimer = 10000; //10 seconden wachten.
-       unsigned long huidigeTijd = millis(); //tijd hoelang het programma al draait. Long omdat het om tijd gaat
-       while (millis() - huidigeTijd < tijdTimer) //doe 10 seconden alles wat in de while staat.
-       {
-         if (radio.available()) //als er iets binnenkomt.
-         {
-           char text[] = {0};
-           radio.read(&text, sizeof(text)); //alles dat wordt ingelezen wordt opgeslagen in de char text.
-           //Serial.println(text);
-
-           if (text[0] == '1')
-           {
-             Serial.println("Dit is controller 1");
-           }
-           else if (text[0] == '2')
-           {
-             Serial.println("Dit is controller 2");
-           }
-           else {
-             Serial.println("controller niet gevonden");
-           }
-
-         }
-         digitalWrite(led, HIGH);
-       }
+        //16x16 dot display = "3"
+        lcd.setCursor(8,0);
+        lcd.print("3");
+        delay(1000);
+        //16x16 dot display = "2"
+        lcd.setCursor(8,0);
+        lcd.print("2");
+        delay(1000);
+        //16x16 dot display = "1"
+        lcd.setCursor(8,0);
+        lcd.print("1");
+        delay(1000);
+        //16x16 dot display = "Timer start"
+        lcd.setCursor(0,0);
+        lcd.print("  Timer starts  ");
 
 
-       digitalWrite(led, LOW);
-       delay(1000);
-       aantalDrukken = 1;
-       lcd.clear();
-       activeren = LOW;
+
+        //(11 - 10 = 1) < 10000 =  true
+        //(12 - 10 = 2) < 10000 = true
+        //.....
+        //(10010 - 10 = 10000) =< 10000 = true
+        //(10011 - 10 = 10001) =< 10000 = false dus doorgaan.
+        char geKlikt[2]; //een array met 4 plekjes
+        int e = 0;
+        unsigned long tijdTimer = random(5000, 20000); //random tijd tussen de 5 en 20 seconden
+        unsigned long huidigeTijd = millis(); //tijd hoelang het programma al draait. Long omdat het om tijd gaat
+        while (millis() - huidigeTijd < tijdTimer) //doe voor het aantal seconden alles wat in de while staat.
+        {
+
+          if (radio.available()) //als er iets binnenkomt.
+          {
+            char in[] = {0};
+            radio.read(&in, sizeof(in)); //alles dat wordt ingelezen wordt opgeslagen in de char in.
+
+            int geKlikt[e] = in[0]; //Elke keer als er iets binnenkomt dan wordt de waarde van de controller in de aangemelde array gegooid.
+            e++
+            //Doordat er bij de controller maar 1 keer gedrukt kan worden staat alles erin.
+
+          }
+        }
+        lcd.setCursor(0,0);
+        lcd.print("CLICK THE BUTTON");
+        lcd.setCursor(0,2);
+        lcd.print("      NOW!      ");
+
+        bool win = false;
+        while(win == false)
+        {
+          //animatie dat timer over is
+          if (radio.available())
+          {
+            char in[] = {0};
+            radio.read(&in, sizeof(in)); //alles dat wordt ingelezen wordt opgeslagen in de char in.
+
+            for (i = 0; i < sizeof(geKlikt[]); i++) //loop door geklikt om te kijken of deze persoon al heeft geklikt.
+            {
+              if (geKlikt[i] != in[0]) //Als hij nog niet is geKlikt
+              {
+                lcd.setCursor(0,0);
+                lcd.print(" The winner is: ");
+                lcd.setCursor(0,2);
+                lcd.print("   Player:");
+                lcd.setCursor(11,2);
+                lcd.print(in[0]);
+
+                delay(4000);
+                win == true;
+              }
+            }
+          }
+        }
+
+
+        aantalDrukken = 1; //terug naar start Menu
+        activeren = LOW;
+        lcd.clear();
       }
       break;
 
-      case 3:
+/************************************************************************************************/
+
+      case 3: //Dobbelsteen
       Serial.print("Menu 3");
       Serial.print("\n");
 
@@ -258,24 +295,64 @@ void menu()
 
       if(activeren == HIGH)
       {
-       Serial.print("3 actief");
-       Serial.print("\n");
-       lcd.setCursor(0,2);
-       lcd.print("  game 2 actief ");
+        lcd.setCursor(0,0);
+        lcd.print("  Dobbelsteen   ");
+        lcd.setCursor(0,2);
+        lcd.print("     Active     ");
 
-       //radio.begin(); //start de zender
-       //radio.openWritingPipe(control1); //init waar de zender naartoe moet verzenden.
-       radio.stopListening(); //door te stoppen met luisteren wordt het een zender.
+        radio.stopListening(); //door te stoppen met luisteren wordt het een zender.
 
-       const char text[] = "2"; //maak een array met karakters genaamd text. Stop hierin "Hello World".
-       radio.write(&text, sizeof(text)); //verstuur de data in de text.
+        char text[] = "2"; //maak een array met karakters genaamd text. Stop hierin "1".
+        radio.write(&text, sizeof(text)); //verstuur de data in de text.
 
+        radio.startListening();
+
+        //(11 - 10 = 1) < 10000 =  true
+        //(12 - 10 = 2) < 10000 = true
+        //.....
+        //(10010 - 10 = 10000) =< 10000 = true
+        //(10011 - 10 = 10001) =< 10000 = false dus doorgaan.
+        char aangemeld[4]; //een array met 4 plekjes
+        int e = 0;
+        unsigned char adr;
+        unsigned long tijdTimer = 10000; //10 seconden wachten.
+        unsigned long huidigeTijd = millis(); //tijd hoelang het programma al draait. Long omdat het om tijd gaat
+        while (millis() - huidigeTijd < tijdTimer) //doe 10 seconden alles wat in de while staat.
+        {
+         if (radio.available()) //als er iets binnenkomt.
+         {
+           char in[] = {0};
+           radio.read(&in, sizeof(in)); //alles dat wordt ingelezen wordt opgeslagen in de char in.
+           //Serial.println(in);
+           int aangemeld[e] = in[0]; //Elke keer als er iets binnenkomt dan wordt de waarde van de controller in de aangemelde array gegooid.
+           e++
+           //Doordat er bij de controller maar 1 keer gedrukt kan worden staat alles erin.
+
+           if (in[0] == '1')
+           {
+             Serial.println("Dit is controller 1");
+           }
+           else if (in[0] == '2')
+           {
+             Serial.println("Dit is controller 2");
+           }
+           else {
+             Serial.println("controller niet gevonden");
+           }
+
+         }
+         digitalWrite(led, HIGH);
+        }
+
+       digitalWrite(led, LOW);
        delay(1000);
-       aantalDrukken = 1;
+       aantalDrukken = 1; //terug naar start Menu
        lcd.clear();
        activeren = LOW;
       }
       break;
+
+/************************************************************************************************/
 
       case 4:
       Serial.print("Menu 4");
@@ -301,7 +378,7 @@ void menu()
        radio.write(&text, sizeof(text)); //verstuur de data in de text.
 
        delay(1000);
-       aantalDrukken = 1;
+       aantalDrukken = 1; //terug naar start Menu
        lcd.clear();
        activeren = LOW;
       }
@@ -310,6 +387,8 @@ void menu()
     laatsteMenu = aantalDrukken;
   }
 }
+
+
 
 void tmp()
 {
