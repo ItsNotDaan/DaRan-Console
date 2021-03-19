@@ -51,7 +51,7 @@ void loop()
 {
  // if (digitalRead(knop) == HIGH)
  // {
-    Serial.println("Loop");
+   Serial.println("Loop");
  // }
   if (radio.available()) //als er iets binnenkomt.
   {
@@ -63,12 +63,13 @@ void loop()
 
     if (text[0] == '1')//is de binnengekomen text '1'? Spel 1 start.
     {
+      radio.startListening();
       Serial.println("Game 1");
-      bool end = false
+      bool end = false;
       //Dit kan dus niet, hij moet wachten hiero. Anders gaat die verder
       while (end == false) //Geen signaal binnen? blijf wachten
       {
-        Serial.println("Wacht op signaal");
+        //Serial.println("Wacht op signaal");
 
         if (digitalRead(knop) == HIGH && isGedrukt == LOW) //Als de knop wordt geklikt.
         {
@@ -81,16 +82,22 @@ void loop()
         }
         if (radio.available()) //Als tekst 4 binnenkomt.
         {
-          text[] = {0};
-          radio.read(&text, sizeof(text)); //alles dat wordt ingelezen wordt opgeslagen in de char text.
-
-          if (text[0] == '4')
+          char in[] = {0};
+          radio.read(&in, sizeof(in)); //alles dat wordt ingelezen wordt opgeslagen in de char text.
+          Serial.println("Signaal binnen");
+          Serial.println(text);
+          if (in[0] == '4')
           {
             Serial.println("Signaal 4 is binnen");
-            end = true
+            end = true;
+          }
+          if (in[0] == 'F') //Te snel gedrukt?
+          {
+            tone(buzz, 1000); //normaal laten trillen
+            delay(1000);
+            noTone(buzz);
           }
         }
-
       }
       isGedrukt = LOW;
     }
