@@ -51,26 +51,53 @@ void loop()
 {
  // if (digitalRead(knop) == HIGH)
  // {
- //   Serial.println("Knop");
+   Serial.println("Loop");
  // }
   if (radio.available()) //als er iets binnenkomt.
   {
     //Serial.println(adr);
+    Serial.println("Radio.available");
     char text[] = {0}; //maak een array met karakters genaamd text. Stop hierin "1".
     radio.read(&text, sizeof(text)); //alles dat wordt ingelezen wordt opgeslagen in de char text.
     Serial.println(text);
 
     if (text[0] == '1')//is de binnengekomen text '1'? Spel 1 start.
     {
+      radio.startListening();
       Serial.println("Game 1");
-//Dit kan dus niet, hij moet wachten hiero. Anders gaat die verder
-      if (digitalRead(knop) == HIGH && isGedrukt == LOW) //Als de knop wordt geklikt.
+      bool end = false;
+      //Dit kan dus niet, hij moet wachten hiero. Anders gaat die verder
+      while (end == false) //Geen signaal binnen? blijf wachten
       {
-        radio.stopListening(); //door te stoppen met luisteren wordt het een zender
-        const char in[] = "1"; //maak een array met karakters genaamd in. Stop hierin "1".
-        radio.write(&in, sizeof(in)); //data die in 'in' staat wordt verstuurd.
-        radio.startListening();
-        isGedrukt = HIGH;
+        //Serial.println("Wacht op signaal");
+
+        if (digitalRead(knop) == HIGH && isGedrukt == LOW) //Als de knop wordt geklikt.
+        {
+          Serial.println("Knop gedrukt");
+          radio.stopListening(); //door te stoppen met luisteren wordt het een zender
+          const char in[] = "1"; //maak een array met karakters genaamd in. Stop hierin "1".
+          radio.write(&in, sizeof(in)); //data die in 'in' staat wordt verstuurd.
+          radio.startListening();
+          isGedrukt = HIGH;
+        }
+        if (radio.available()) //Als tekst 4 binnenkomt.
+        {
+          char in[] = {0};
+          radio.read(&in, sizeof(in)); //alles dat wordt ingelezen wordt opgeslagen in de char text.
+          Serial.println("Signaal binnen");
+          Serial.println(text);
+          if (in[0] == '4')
+          {
+            Serial.println("Signaal 4 is binnen");
+            end = true;
+          }
+          if (in[0] == 'F') //Te snel gedrukt?
+          {
+            tone(buzz, 1000); //normaal laten trillen
+            delay(1000);
+            noTone(buzz);
+          }
+        }
       }
       isGedrukt = LOW;
     }

@@ -139,7 +139,7 @@ void menu()
       //lcd.print("Temp: ..C  Night");
 
       lcd.setCursor(6,2);
-      //tmp();
+      tmp();
       lcd.print(temp); //gaat heel snel. Later oplossing voorbedenken.
       if (temp < 10) {
         lcd.setCursor(8,2);
@@ -152,7 +152,6 @@ void menu()
       }
 
       lght();
-
       if (light == "Night") {
         lcd.setCursor(11,2);
       }
@@ -201,7 +200,7 @@ void menu()
         radio.write(&text, sizeof(text)); //verstuur de data in de text.
 
         radio.startListening();
-
+        lcd.clear();
         //16x16 dot display = "3"
         lcd.setCursor(8,0);
         lcd.print("3");
@@ -225,56 +224,83 @@ void menu()
         //.....
         //(10010 - 10 = 10000) =< 10000 = true
         //(10011 - 10 = 10001) =< 10000 = false dus doorgaan.
-        char geKlikt[2]; //een array met 4 plekjes
-        int e = 0;
+        //char geKlikt[2] = {0}; //een array met 4 plekjes
+        //int e = 0;
         unsigned long tijdTimer = random(5000, 20000); //random tijd tussen de 5 en 20 seconden
         unsigned long huidigeTijd = millis(); //tijd hoelang het programma al draait. Long omdat het om tijd gaat
         while (millis() - huidigeTijd < tijdTimer) //doe voor het aantal seconden alles wat in de while staat.
         {
-
           if (radio.available()) //als er iets binnenkomt.
           {
             char in[] = {0};
             radio.read(&in, sizeof(in)); //alles dat wordt ingelezen wordt opgeslagen in de char in.
 
-            int geKlikt[e] = in[0]; //Elke keer als er iets binnenkomt dan wordt de waarde van de controller in de aangemelde array gegooid.
-            e++
+            //geKlikt[e] = in[0]; //Elke keer als er iets binnenkomt dan wordt de waarde van de controller in de aangemelde array gegooid.
+            //e++;
             //Doordat er bij de controller maar 1 keer gedrukt kan worden staat alles erin.
-
+            if (in[0] == '1')
+            {
+              radio.stopListening(); //door te stoppen met luisteren wordt het een zender.
+              char text[] = "F"; //maak een array met karakters genaamd text. Stop hierin "1".
+              radio.write(&text, sizeof(text)); //verstuur de data in de text.
+              radio.startListening();
+            }
+            else if (in[0] == '2')
+            {
+              radio.stopListening(); //door te stoppen met luisteren wordt het een zender.
+              char text[] = "F"; //maak een array met karakters genaamd text. Stop hierin "1".
+              radio.write(&text, sizeof(text)); //verstuur de data in de text.
+              radio.startListening();
+            }
           }
+          //in principe niet nodig want bij de controller kan je maar 1 keer klikken.
         }
+        radio.startListening();
+
         lcd.setCursor(0,0);
         lcd.print("CLICK THE BUTTON");
         lcd.setCursor(0,2);
         lcd.print("      NOW!      ");
 
-        bool win = false;
-        while(win == false)
+        tijdTimer = 10000; //Wacht 10 seconden. Als er niets is gedrukt dan gwn terug.
+        huidigeTijd = millis(); //tijd hoelang het programma al draait.
+        while (millis() - huidigeTijd < tijdTimer) //doe voor het aantal seconden alles wat in de while staat.
         {
-          //animatie dat timer over is
+        //animatie dat timer over is
           if (radio.available())
           {
+          //bool fout = false
+            Serial.println("Radio is avaiable");
             char in[] = {0};
             radio.read(&in, sizeof(in)); //alles dat wordt ingelezen wordt opgeslagen in de char in.
 
-            for (i = 0; i < sizeof(geKlikt[]); i++) //loop door geklikt om te kijken of deze persoon al heeft geklikt.
+          /*for (int i = 0; i <= e; i++) //loop door geklikt om te kijken of deze persoon al heeft geklikt.
+          {
+            if (geKlikt[i] == in[0]) //Als hij nog niet is geKlikt
             {
-              if (geKlikt[i] != in[0]) //Als hij nog niet is geKlikt
-              {
-                lcd.setCursor(0,0);
-                lcd.print(" The winner is: ");
-                lcd.setCursor(0,2);
-                lcd.print("   Player:");
-                lcd.setCursor(11,2);
-                lcd.print(in[0]);
-
-                delay(4000);
-                win == true;
-              }
+              fout = true //Als die fout is dan fout = true
             }
+          }*/
+
+          //if (fout == false) //Is fout nog false? Dan is dit de winnaar. Anders opnieuw kijken.
+          //{
+            lcd.setCursor(0,0);
+            lcd.print(" The winner is: ");
+            lcd.setCursor(0,2);
+            lcd.print("   Player:");
+            lcd.setCursor(11,2);
+            lcd.print(in[0]);
+
+            delay(4000);
+            tijdTimer = 0; //Stop de timer
+          //}
+
           }
         }
-
+        radio.stopListening(); //door te stoppen met luisteren wordt het een zender.
+        char eind[] = "4"; //maak een array met karakters genaamd text. Stop hierin "4".
+        radio.write(&eind, sizeof(eind)); //verstuur de data in de text.
+        radio.startListening();
 
         aantalDrukken = 1; //terug naar start Menu
         activeren = LOW;
@@ -324,8 +350,8 @@ void menu()
            char in[] = {0};
            radio.read(&in, sizeof(in)); //alles dat wordt ingelezen wordt opgeslagen in de char in.
            //Serial.println(in);
-           int aangemeld[e] = in[0]; //Elke keer als er iets binnenkomt dan wordt de waarde van de controller in de aangemelde array gegooid.
-           e++
+           aangemeld[e] = in[0]; //Elke keer als er iets binnenkomt dan wordt de waarde van de controller in de aangemelde array gegooid.
+           e++;
            //Doordat er bij de controller maar 1 keer gedrukt kan worden staat alles erin.
 
            if (in[0] == '1')
