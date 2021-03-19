@@ -269,6 +269,12 @@ void menu()
                 lcd.print(in[0]);
 
                 delay(4000);
+                radio.stopListening(); //door te stoppen met luisteren wordt het een zender.
+
+                char text[] = "4"; //maak een array met karakters genaamd text. Stop hierin "1".
+                radio.write(&text, sizeof(text)); //verstuur de data in de text.
+
+                radio.startListening();
                 win == true;
               }
             }
