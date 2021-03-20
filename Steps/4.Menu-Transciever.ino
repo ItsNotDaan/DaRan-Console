@@ -27,7 +27,7 @@
 
 //Dit is het adressen waar naar verzonden/ontvangen wordt.
 //const byte address[][6] = {"00001", "00002","00003"};
-const byte hub[6] = "00001"; //Dit is het adress waar naar verzonden wordt.
+//const byte hub[6] = "00001"; //Dit is het adress waar naar verzonden wordt.
 const byte con1[6] = "00002"; //Dit is het adress waar naar verzonden wordt.
 const byte con2[6] = "00003"; //Dit is het adress waar naar verzonden wordt.
 //00001 = De hub
@@ -67,8 +67,9 @@ void setup()
   radio.begin(); //start de zender
 
   radio.openReadingPipe(1, con1); //adres dat ook in de constant werd aangegeven. Lezen
+  radio.openReadingPipe(2, con2); //adres dat ook in de constant werd aangegeven. Lezen
   //radio.openReadingPipe(2, address[2]); //adres dat ook in de constant werd aangegeven. Lezen
-  radio.openWritingPipe(hub);//het apparaat dat schrijft.
+  //radio.openWritingPipe(hub);//het apparaat dat schrijft.
   radio.startListening();
   lcd.begin(16,2);
   lcd.home();
@@ -195,8 +196,12 @@ void menu()
         lcd.print("     Active     ");
 
         radio.stopListening(); //door te stoppen met luisteren wordt het een zender.
+        radio.openWritingPipe(con1);
 
         char text[] = "1"; //maak een array met karakters genaamd text. Stop hierin "1".
+        radio.write(&text, sizeof(text)); //verstuur de data in de text.
+
+        radio.openWritingPipe(con2);
         radio.write(&text, sizeof(text)); //verstuur de data in de text.
 
         radio.startListening();
