@@ -27,7 +27,8 @@ RF24 radio(9, 8);  // CE, CSN. Dit is nodig voor de librarie om te kijken welke 
 // ----- Declare subroutines and/or functions -----
 
 // ----- Declare Global Variables -----
-const int buzz = 7; //const maakt een read only
+int buzz = 7; //Buzzer
+int vibr = 5; //Vibration motor
 bool isGedrukt = LOW;
 unsigned char adr;
 
