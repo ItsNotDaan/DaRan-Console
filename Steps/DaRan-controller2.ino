@@ -89,13 +89,18 @@ void loop()
           if (in[0] == '4')
           {
             Serial.println("Signaal 4 is binnen");
+            noTone(buzz);
             end = true;
           }
-          if (in[0] == 'F') //Te snel gedrukt?
+          else if (in[0] == 'F') //Te snel gedrukt?
           {
             tone(buzz, 1000); //normaal laten trillen
             delay(1000);
             noTone(buzz);
+          }
+          else if (in[0] == 'T')//Winnaar?
+          {
+            tone(buzz, 1000);
           }
         }
       }

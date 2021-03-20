@@ -27,7 +27,7 @@
 
 //Dit is het adressen waar naar verzonden/ontvangen wordt.
 //const byte address[][6] = {"00001", "00002","00003"};
-//const byte hub[6] = "00001"; //Dit is het adress waar naar verzonden wordt.
+const byte hub[6] = "00001"; //Dit is het adress waar naar verzonden wordt.
 const byte con1[6] = "00002"; //Dit is het adress waar naar verzonden wordt.
 const byte con2[6] = "00003"; //Dit is het adress waar naar verzonden wordt.
 //00001 = De hub
@@ -66,8 +66,8 @@ void setup()
   Serial.begin(9600);
   radio.begin(); //start de zender
 
-  radio.openReadingPipe(1, con1); //adres dat ook in de constant werd aangegeven. Lezen
-  radio.openReadingPipe(2, con2); //adres dat ook in de constant werd aangegeven. Lezen
+  radio.openReadingPipe(1, hub); //adres dat ook in de constant werd aangegeven. Lezen
+  radio.openReadingPipe(2, hub); //adres dat ook in de constant werd aangegeven. Lezen
   //radio.openReadingPipe(2, address[2]); //adres dat ook in de constant werd aangegeven. Lezen
   //radio.openWritingPipe(hub);//het apparaat dat schrijft.
   radio.startListening();
@@ -196,15 +196,15 @@ void menu()
         lcd.print("     Active     ");
 
         radio.stopListening(); //door te stoppen met luisteren wordt het een zender.
-        radio.openWritingPipe(con1);
-
         char text[] = "1"; //maak een array met karakters genaamd text. Stop hierin "1".
-        radio.write(&text, sizeof(text)); //verstuur de data in de text.
 
         radio.openWritingPipe(con2);
         radio.write(&text, sizeof(text)); //verstuur de data in de text.
 
+        radio.openWritingPipe(con1);
+        radio.write(&text, sizeof(text)); //verstuur de data in de text.
         radio.startListening();
+
         lcd.clear();
         //16x16 dot display = "3"
         lcd.setCursor(8,0);
@@ -245,6 +245,7 @@ void menu()
             //Doordat er bij de controller maar 1 keer gedrukt kan worden staat alles erin.
             if (in[0] == '1')
             {
+              radio.openWritingPipe(con1);
               radio.stopListening(); //door te stoppen met luisteren wordt het een zender.
               char text[] = "F"; //maak een array met karakters genaamd text. Stop hierin "1".
               radio.write(&text, sizeof(text)); //verstuur de data in de text.
@@ -252,6 +253,7 @@ void menu()
             }
             else if (in[0] == '2')
             {
+              radio.openWritingPipe(con2);
               radio.stopListening(); //door te stoppen met luisteren wordt het een zender.
               char text[] = "F"; //maak een array met karakters genaamd text. Stop hierin "1".
               radio.write(&text, sizeof(text)); //verstuur de data in de text.
@@ -295,6 +297,21 @@ void menu()
             lcd.print("   Player:");
             lcd.setCursor(11,2);
             lcd.print(in[0]);
+            char win[] = "T"; //maak een array met karakters genaamd text. Stop hierin "T" van tone.
+            if (in[0] == '1') //Winnaar con1?
+            {
+              radio.stopListening(); //door te stoppen met luisteren wordt het een zender.
+              radio.openWritingPipe(con1);
+              radio.write(&win, sizeof(win)); //verstuur de data in de text.
+              radio.startListening();
+            }
+            else if (in[0] == '2')//Winnaar con2?
+            {
+              radio.stopListening(); //door te stoppen met luisteren wordt het een zender.
+              radio.openWritingPipe(con2);
+              radio.write(&win, sizeof(win)); //verstuur de data in de text.
+              radio.startListening();
+            }
 
             delay(4000);
             tijdTimer = 0; //Stop de timer
@@ -303,7 +320,11 @@ void menu()
           }
         }
         radio.stopListening(); //door te stoppen met luisteren wordt het een zender.
+        radio.openWritingPipe(con1);
         char eind[] = "4"; //maak een array met karakters genaamd text. Stop hierin "4".
+        radio.write(&eind, sizeof(eind)); //verstuur de data in de text.
+
+        radio.openWritingPipe(con2);
         radio.write(&eind, sizeof(eind)); //verstuur de data in de text.
         radio.startListening();
 
