@@ -1,5 +1,5 @@
 /*
-  Name: DaRan Ontvanger
+  Name: DaRan Controller 2
   Date:
   Author: Daan Heetkamp
 
@@ -15,19 +15,19 @@
 #include <SPI.h>
 #include <nRF24L01.h>
 #include <RF24.h>
-#define knop 6
+#define knop 11
 
 // ----- Declare Constants -----
 const byte hub[6] = "00001"; //Dit is het adres van de hub.
-const byte con1[6] = "00003"; //Dit is het adres van deze controller
+const byte con2[6] = "00003"; //Dit is het adres van deze controller
 
 // ----- Declare Objects -----
-RF24 radio(9, 8);  // CE, CSN. Dit is nodig voor de librarie om te kijken welke pin de ontvanger is aangesloten.
+RF24 radio(9, 10);  // CE, CSN. Dit is nodig voor de librarie om te kijken welke pin de ontvanger is aangesloten.
 
 // ----- Declare subroutines and/or functions -----
 
 // ----- Declare Global Variables -----
-const int buzz = 7; //const maakt een read only
+const int buzz = 13; //const maakt een read only
 bool isGedrukt = LOW;
 unsigned char adr;
 
@@ -40,9 +40,9 @@ void setup()
   Serial.begin(9600); //Start een seriele verbinding.
 
   radio.begin(); //zorg dat de radio begint met luisteren
-  radio.openReadingPipe(2, hub); //adres dat ook in de constant werd aangegeven. Lezen
+  radio.openReadingPipe(1, con2); //adres dat ook in de constant werd aangegeven. Lezen
   //radio.openWritingPipe(con1); //adres dat ook in de constant werd aangegeven.Schrijven
-  radio.openWritingPipe(con1);
+  radio.openWritingPipe(hub);
   radio.startListening(); //dit is een ontvanger. .startSending is een zender.
 }
 
@@ -117,7 +117,7 @@ void loop()
       {
         if (millis() - huidigeTijd > 8000)
         {
-            //tone(buzz, 2000);
+            tone(buzz, 1000);
         }
         if (digitalRead(knop) == HIGH && isGedrukt == LOW) //Als de knop wordt geklikt.
         {

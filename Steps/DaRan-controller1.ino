@@ -40,9 +40,9 @@ void setup()
   Serial.begin(9600); //Start een seriele verbinding.
 
   radio.begin(); //zorg dat de radio begint met luisteren
-  radio.openReadingPipe(1, hub); //adres dat ook in de constant werd aangegeven. Lezen
+  radio.openReadingPipe(1, con1); //adres dat ook in de constant werd aangegeven. Lezen
   //radio.openWritingPipe(con1); //adres dat ook in de constant werd aangegeven.Schrijven
-  radio.openWritingPipe(con1);
+  radio.openWritingPipe(hub);
   radio.startListening(); //dit is een ontvanger. .startSending is een zender.
 }
 
@@ -66,6 +66,7 @@ void loop()
       radio.startListening();
       Serial.println("Game 1");
       bool end = false;
+
       //Dit kan dus niet, hij moet wachten hiero. Anders gaat die verder
       while (end == false) //Geen signaal binnen? blijf wachten
       {
@@ -75,7 +76,7 @@ void loop()
         {
           Serial.println("Knop gedrukt");
           radio.stopListening(); //door te stoppen met luisteren wordt het een zender
-          const char in[] = "1"; //maak een array met karakters genaamd in. Stop hierin "1".
+          const char in[] = "2"; //maak een array met karakters genaamd in. Stop hierin "1".
           radio.write(&in, sizeof(in)); //data die in 'in' staat wordt verstuurd.
           radio.startListening();
           isGedrukt = HIGH;
@@ -117,7 +118,7 @@ void loop()
       {
         if (millis() - huidigeTijd > 8000)
         {
-            //tone(buzz, 2000);
+            tone(buzz, 2000);
         }
         if (digitalRead(knop) == HIGH && isGedrukt == LOW) //Als de knop wordt geklikt.
         {
