@@ -27,7 +27,8 @@ RF24 radio(9, 10);  // CE, CSN. Dit is nodig voor de librarie om te kijken welke
 // ----- Declare subroutines and/or functions -----
 
 // ----- Declare Global Variables -----
-const int buzz = 13; //const maakt een read only
+int buzz = 13; //const maakt een read only
+int vibr = 5;
 bool isGedrukt = LOW;
 unsigned char adr;
 
@@ -35,6 +36,7 @@ unsigned char adr;
 void setup()
 {
   pinMode(buzz, OUTPUT);
+  pinMode(vibr, OUTPUT);
   pinMode(knop, INPUT_PULLUP);
 
   Serial.begin(9600); //Start een seriele verbinding.
@@ -90,17 +92,21 @@ void loop()
           {
             Serial.println("Signaal 4 is binnen");
             noTone(buzz);
+            digitalWrite(vibr, LOW);
             end = true;
           }
           else if (in[0] == 'F') //Te snel gedrukt?
           {
             tone(buzz, 1000); //normaal laten trillen
+            digitalWrite(vibr, HIGH);
             delay(1000);
             noTone(buzz);
+            digitalWrite(vibr, LOW);
           }
           else if (in[0] == 'T')//Winnaar?
           {
             tone(buzz, 1000);
+            digitalWrite(vibr, HIGH);
           }
         }
       }
@@ -143,7 +149,5 @@ void loop()
     }
     //Serial.println(text); //text wordt gescgrevcen in de seriele monitor.
     //Serial.println(buz); //text wordt gescgrevcen in de seriele monitor.
-    delay(1000);
-    noTone(buzz);
   }
 }

@@ -27,7 +27,8 @@ RF24 radio(9, 8);  // CE, CSN. Dit is nodig voor de librarie om te kijken welke 
 // ----- Declare subroutines and/or functions -----
 
 // ----- Declare Global Variables -----
-const int buzz = 7; //const maakt een read only
+int buzz = 7; //Buzzer
+int vibr = 5; //Vibration motor
 bool isGedrukt = LOW;
 unsigned char adr;
 
@@ -35,6 +36,7 @@ unsigned char adr;
 void setup()
 {
   pinMode(buzz, OUTPUT);
+  pinMode(vibr, OUTPUT);
   pinMode(knop, INPUT_PULLUP);
 
   Serial.begin(9600); //Start een seriele verbinding.
@@ -76,7 +78,7 @@ void loop()
         {
           Serial.println("Knop gedrukt");
           radio.stopListening(); //door te stoppen met luisteren wordt het een zender
-          const char in[] = "2"; //maak een array met karakters genaamd in. Stop hierin "1".
+          const char in[] = "1"; //maak een array met karakters genaamd in. Stop hierin "1".
           radio.write(&in, sizeof(in)); //data die in 'in' staat wordt verstuurd.
           radio.startListening();
           isGedrukt = HIGH;
@@ -87,21 +89,25 @@ void loop()
           radio.read(&in, sizeof(in)); //alles dat wordt ingelezen wordt opgeslagen in de char text.
           Serial.println("Signaal binnen");
           Serial.println(text);
-          if (in[0] == '4')
+          if (in[0] == '4') //Einde van game 4.
           {
             Serial.println("Signaal 4 is binnen");
+            digitalWrite(vibr, LOW);
             noTone(buzz);
             end = true;
           }
           else if (in[0] == 'F') //Te snel gedrukt?
           {
             tone(buzz, 1000); //normaal laten trillen
+            digitalWrite(vibr, HIGH);
             delay(1000);
             noTone(buzz);
+            digitalWrite(vibr, LOW);
           }
           else if (in[0] == 'T')//Winnaar?
           {
             tone(buzz, 1000);
+            digitalWrite(vibr, HIGH);
           }
 
         }
