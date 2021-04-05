@@ -236,9 +236,6 @@ void menu()
             char in[] = {0};
             radio.read(&in, sizeof(in)); //alles dat wordt ingelezen wordt opgeslagen in de char in.
 
-            //geKlikt[e] = in[0]; //Elke keer als er iets binnenkomt dan wordt de waarde van de controller in de aangemelde array gegooid.
-            //e++;
-            //Doordat er bij de controller maar 1 keer gedrukt kan worden staat alles erin.
             if (in[0] == '1')
             {
               radio.openWritingPipe(con1);
@@ -256,7 +253,6 @@ void menu()
               radio.startListening();
             }
           }
-          //in principe niet nodig want bij de controller kan je maar 1 keer klikken.
         }
         radio.startListening();
 
@@ -272,21 +268,10 @@ void menu()
         //animatie dat timer over is
           if (radio.available())
           {
-          //bool fout = false
             Serial.println("Radio is avaiable");
             char in[] = {0};
             radio.read(&in, sizeof(in)); //alles dat wordt ingelezen wordt opgeslagen in de char in.
 
-          /*for (int i = 0; i <= e; i++) //loop door geklikt om te kijken of deze persoon al heeft geklikt.
-          {
-            if (geKlikt[i] == in[0]) //Als hij nog niet is geKlikt
-            {
-              fout = true //Als die fout is dan fout = true
-            }
-          }*/
-
-          //if (fout == false) //Is fout nog false? Dan is dit de winnaar. Anders opnieuw kijken.
-          //{
             lcd.setCursor(0,0);
             lcd.print(" The winner is: ");
             lcd.setCursor(0,2);
@@ -311,8 +296,6 @@ void menu()
 
             delay(4000);
             tijdTimer = 0; //Stop de timer
-          //}
-
           }
         }
         radio.stopListening(); //door te stoppen met luisteren wordt het een zender.
@@ -330,6 +313,13 @@ void menu()
       }
       break;
 
+      /*for (int i = 0; i <= e; i++) //loop door geklikt om te kijken of deze persoon al heeft geklikt.
+      {
+        if (geKlikt[i] == in[0]) //Als hij nog niet is geKlikt
+        {
+          fout = true //Als die fout is dan fout = true
+        }
+      }*/
 /************************************************************************************************/
 
       case 3: //Dobbelsteen
@@ -375,7 +365,6 @@ void menu()
            aangemeld[e] = in[0]; //Elke keer als er iets binnenkomt dan wordt de waarde van de controller in de aangemelde array gegooid.
            e++;
            //Doordat er bij de controller maar 1 keer gedrukt kan worden staat alles erin.
-
            if (in[0] == '1')
            {
              Serial.println("Dit is controller 1");
@@ -387,17 +376,18 @@ void menu()
            else {
              Serial.println("controller niet gevonden");
            }
-
          }
-         digitalWrite(led, HIGH);
         }
+        int grote = sizeof(aangemeld) / sizeof(aangemeld[0]);
+        for (int g = )
 
-       digitalWrite(led, LOW);
-       delay(1000);
-       aantalDrukken = 1; //terug naar start Menu
-       lcd.clear();
-       activeren = LOW;
-      }
+
+        digitalWrite(led, LOW);
+        delay(1000);
+        aantalDrukken = 1; //terug naar start Menu
+        lcd.clear();
+        activeren = LOW;
+       }
       break;
 
 /************************************************************************************************/
