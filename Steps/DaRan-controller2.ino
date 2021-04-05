@@ -18,9 +18,8 @@
 #define knop 11
 
 // ----- Declare Constants -----
-const byte hub[6] = "00001"; //Dit is het adres van de hub.
-const byte con2[6] = "00003"; //Dit is het adres van deze controller
-
+const byte con2[6] = "20000"; //Dit is het verzend adres van deze controller.
+const byte Rcon2[6] = "20001"; //Dit is het ontvang adres van deze controller.
 // ----- Declare Objects -----
 RF24 radio(9, 10);  // CE, CSN. Dit is nodig voor de librarie om te kijken welke pin de ontvanger is aangesloten.
 
@@ -42,9 +41,9 @@ void setup()
   Serial.begin(9600); //Start een seriele verbinding.
 
   radio.begin(); //zorg dat de radio begint met luisteren
-  radio.openReadingPipe(1, con2); //adres dat ook in de constant werd aangegeven. Lezen
-  //radio.openWritingPipe(con1); //adres dat ook in de constant werd aangegeven.Schrijven
-  radio.openWritingPipe(hub);
+  radio.openReadingPipe(1, Rcon2); //adres dat ook in de constant werd aangegeven. Lezen
+  radio.openWritingPipe(con2);
+  
   radio.startListening(); //dit is een ontvanger. .startSending is een zender.
 }
 
