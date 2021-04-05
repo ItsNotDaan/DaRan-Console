@@ -1,5 +1,5 @@
 /*
-  Name: DaRan Controller 2
+  Name: DaRan Ontvanger
   Date:
   Author: Daan Heetkamp
 
@@ -15,19 +15,20 @@
 #include <SPI.h>
 #include <nRF24L01.h>
 #include <RF24.h>
-#define knop 11
+#define knop 6
 
 // ----- Declare Constants -----
 const byte con2[6] = "20000"; //Dit is het verzend adres van deze controller.
 const byte Rcon2[6] = "20001"; //Dit is het ontvang adres van deze controller.
+
 // ----- Declare Objects -----
-RF24 radio(9, 10);  // CE, CSN. Dit is nodig voor de librarie om te kijken welke pin de ontvanger is aangesloten.
+RF24 radio(9, 8);  // CE, CSN. Dit is nodig voor de librarie om te kijken welke pin de ontvanger is aangesloten.
 
 // ----- Declare subroutines and/or functions -----
 
 // ----- Declare Global Variables -----
-int buzz = 13; //const maakt een read only
-int vibr = 5;
+int buzz = 7; //Buzzer
+int vibr = 5; //Vibration motor
 bool isGedrukt = LOW;
 unsigned char adr;
 
@@ -38,35 +39,26 @@ void setup()
   pinMode(vibr, OUTPUT);
   pinMode(knop, INPUT_PULLUP);
 
-  Serial.begin(9600); //Start een seriele verbinding.
-
   radio.begin(); //zorg dat de radio begint met luisteren
+  
   radio.openReadingPipe(1, Rcon2); //adres dat ook in de constant werd aangegeven. Lezen
   radio.openWritingPipe(con2);
-  
   radio.startListening(); //dit is een ontvanger. .startSending is een zender.
 }
 
 // Main loop
 void loop()
 {
- // if (digitalRead(knop) == HIGH)
- // {
-   Serial.println("Loop");
- // }
   if (radio.available()) //als er iets binnenkomt.
   {
-    //Serial.println(adr);
-    Serial.println("Radio.available");
     char text[] = {0}; //maak een array met karakters genaamd text. Stop hierin "1".
     radio.read(&text, sizeof(text)); //alles dat wordt ingelezen wordt opgeslagen in de char text.
-    Serial.println(text);
 
     if (text[0] == '1')//is de binnengekomen text '1'? Spel 1 start.
     {
       radio.startListening();
-      Serial.println("Game 1");
       bool end = false;
+
       //Dit kan dus niet, hij moet wachten hiero. Anders gaat die verder
       while (end == false) //Geen signaal binnen? blijf wachten
       {
@@ -74,7 +66,6 @@ void loop()
 
         if (digitalRead(knop) == HIGH && isGedrukt == LOW) //Als de knop wordt geklikt.
         {
-          Serial.println("Knop gedrukt");
           radio.stopListening(); //door te stoppen met luisteren wordt het een zender
           const char in[] = "2"; //maak een array met karakters genaamd in. Stop hierin "1".
           radio.write(&in, sizeof(in)); //data die in 'in' staat wordt verstuurd.
@@ -84,14 +75,11 @@ void loop()
         if (radio.available()) //Als tekst 4 binnenkomt.
         {
           char in[] = {0};
-          radio.read(&in, sizeof(in)); //alles dat wordt ingelezen wordt opgeslagen in de char text.
-          Serial.println("Signaal binnen");
-          Serial.println(text);
-          if (in[0] == '4')
+          radio.read(&in, sizeof(in)); //alles dat wordt ingelezen wordt opgeslagen in de char text
+          if (in[0] == '4') //Einde van game 4.
           {
-            Serial.println("Signaal 4 is binnen");
-            noTone(buzz);
             digitalWrite(vibr, LOW);
+            noTone(buzz);
             end = true;
           }
           else if (in[0] == 'F') //Te snel gedrukt?
@@ -107,6 +95,7 @@ void loop()
             tone(buzz, 1000);
             digitalWrite(vibr, HIGH);
           }
+
         }
       }
       isGedrukt = LOW;
@@ -114,7 +103,7 @@ void loop()
 
     else if (text == 2)
     {
-      Serial.println("text = 1");
+      //Serial.println("text = 1");
       //(11 - 10 = 1) < 10000 =  true
       //(12 - 10 = 2) < 10000 = true
       //.....
@@ -127,7 +116,7 @@ void loop()
       {
         if (millis() - huidigeTijd > 8000)
         {
-            tone(buzz, 1000);
+            tone(buzz, 2000);
         }
         if (digitalRead(knop) == HIGH && isGedrukt == LOW) //Als de knop wordt geklikt.
         {
@@ -148,5 +137,7 @@ void loop()
     }
     //Serial.println(text); //text wordt gescgrevcen in de seriele monitor.
     //Serial.println(buz); //text wordt gescgrevcen in de seriele monitor.
+    delay(1000);
+    noTone(buzz);
   }
 }
