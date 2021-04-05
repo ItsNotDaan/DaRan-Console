@@ -9,7 +9,7 @@ The controllers and the hub have to be connected through wireless communications
 
 # The following parts are used:
 
-Hub:
+## Hub:
 
 16x16 DOT Display
 
@@ -32,7 +32,7 @@ nRF24L01 tranceiver
 Arduino ATMega2560
 
 
-Controller:
+## Controller:
 
 Button
 
@@ -46,14 +46,19 @@ ATMega328P
 
 # The following games are made:
 
-Finished:
+## Finished:
 
 Fastest Presser.
 
-Not finished:
+## Not finished:
 
 Roll the dice.
 
 Press till you die. 
 
+# Information about the code:
+The code in this project is completely written in Arduino (.ino). 
 
+It is possible to write it in C but programming in Arduino was faster and simpler for us. 
+
+Bootloading and uploading to the ATMega328P is also fast and easy so a little bug is fixed in 5 minutes.
