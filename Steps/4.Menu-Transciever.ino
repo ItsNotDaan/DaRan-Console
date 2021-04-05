@@ -26,13 +26,10 @@
 #define led 6
 
 //Dit is het adressen waar naar verzonden/ontvangen wordt.
-//const byte address[][6] = {"00001", "00002","00003"};
-const byte hub[6] = "00001"; //Dit is het adress waar naar verzonden wordt.
-const byte con1[6] = "00002"; //Dit is het adress waar naar verzonden wordt.
-const byte con2[6] = "00003"; //Dit is het adress waar naar verzonden wordt.
-//00001 = De hub
-//00002 = Controller 1
-//00003 = Controller 2
+const byte Rcon1[6] = "10000"; //Controller 1 dat wordt gelezen.
+const byte Rcon2[6] = "20000"; //Controller 2 dat wordt gelezen.
+const byte con1[6] = "10001"; //Adres van controller 1 voor het verzenden.
+const byte con2[6] = "20001"; //Adres van controller 2 voor het verzenden.
 
 // ----- Declare Objects -----
 LiquidCrystal_I2C lcd(0x27, 2, 1, 0, 4, 5, 6, 7, 3, POSITIVE); //voor lcd
@@ -66,10 +63,9 @@ void setup()
   Serial.begin(9600);
   radio.begin(); //start de zender
 
-  radio.openReadingPipe(1, hub); //adres dat ook in de constant werd aangegeven. Lezen
-  radio.openReadingPipe(2, hub); //adres dat ook in de constant werd aangegeven. Lezen
-  //radio.openReadingPipe(2, address[2]); //adres dat ook in de constant werd aangegeven. Lezen
-  //radio.openWritingPipe(hub);//het apparaat dat schrijft.
+  radio.openReadingPipe(1, Rcon1); //adres dat ook in de constant werd aangegeven. Lezen
+  radio.openReadingPipe(2, Rcon2); //adres dat ook in de constant werd aangegeven. Lezen
+
   radio.startListening();
   lcd.begin(16,2);
   lcd.home();
