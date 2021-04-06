@@ -386,7 +386,11 @@ void menu()
              spelers++;
           }
         }
-        int rondes = 0;
+        Serial.println(e);
+        Serial.println(spelers);
+        int rondes;
+        int points[4] = {};
+        char pointName[4] = {};
         while (spelers != rondes) //Rondes hetzelfde als het aantal mensen dat had gedrukt?
         {
           for (int a = 0; a < spelers; a++) //loop van 0 tot het aantal mensen dat heeft gedrukt.
@@ -400,16 +404,56 @@ void menu()
             bool klik = false;
             while (klik == false) //klik false?
             {
-              if 
-              klik = true;
+              if (radio.available()) //signaal binnen?
+              {
+                bool klaar = false;
+                char in2[] = {0};
+                radio.read(&in2, sizeof(in2));
+                if (in2[0] == aangemeld[a]) //Zelfde als degene die als eerste mocht gooien?
+                {
+                  int gooi = random(1,6); //maak een getal tussen de 1 en 6.
+                  points[a] = gooi; //De waarde van gooi in array points.
+                  pointName[a] = in2[0] //De controller naam van de gooier op dezelfde plek als de hoogste.
+
+                  klik = true;
+                }
+              }
             }
           }
-          rondes++
+          rondes++ //Langs alle spelers gaan.
         }
+        int aantal1, aantal2, totaal;
+        aantal1 = max(points[0], points[1]); //Max van deze twee in aantal1;
+        aantal2 = max(points[2], points[3]); //Max van deze twee in aantal2;
+        aantal = max(aantal1, aantal2); //max van de 4 in aantal.
+        Serial.println(aantal);
+        int winner/*[4] = {}*/;
+        int b;
+        for (int a = 0; a < 4; a++) //ga voor 4 keer kijken welk nummer het hoogste is.
+        {
+          /*if (points[a] == winner) //is er nog een keer de waarde van de winnaar?
+          {
+            b++
+          }*/
 
+          if (points[a] == aantal) //komt de waarde overeen met het getal in het array.
+          {
+            winner/*[b]*/ = a; //de waarde van a in winnaar stoppen.
+          }
+          //winner kan nu zijn {2,4,0,0} Controller 2 en 4 zijn dus dubbel en moeten nog een keer.
+        }
+        /*
+        De naam van de winnaar wordt uit het array gehaald.
+        pointName[0,3,2,0]
+        points[0,1,6,0]
+        Controller 2 is de winnaar met 6 punten.
+        */
+        Serial.print("Speler ");
+        Serial.print(pointName[winner]);
+        Serial.print("has won with: ");
+        Serial.print(pointName[winner]);
+        Serial.print("points\n");
 
-
-        digitalWrite(led, LOW);
         delay(1000);
         aantalDrukken = 1; //terug naar start Menu
         lcd.clear();
