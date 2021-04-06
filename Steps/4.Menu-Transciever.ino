@@ -236,9 +236,6 @@ void menu()
             char in[] = {0};
             radio.read(&in, sizeof(in)); //alles dat wordt ingelezen wordt opgeslagen in de char in.
 
-            //geKlikt[e] = in[0]; //Elke keer als er iets binnenkomt dan wordt de waarde van de controller in de aangemelde array gegooid.
-            //e++;
-            //Doordat er bij de controller maar 1 keer gedrukt kan worden staat alles erin.
             if (in[0] == '1')
             {
               radio.openWritingPipe(con1);
@@ -256,7 +253,6 @@ void menu()
               radio.startListening();
             }
           }
-          //in principe niet nodig want bij de controller kan je maar 1 keer klikken.
         }
         radio.startListening();
 
@@ -272,21 +268,10 @@ void menu()
         //animatie dat timer over is
           if (radio.available())
           {
-          //bool fout = false
             Serial.println("Radio is avaiable");
             char in[] = {0};
             radio.read(&in, sizeof(in)); //alles dat wordt ingelezen wordt opgeslagen in de char in.
 
-          /*for (int i = 0; i <= e; i++) //loop door geklikt om te kijken of deze persoon al heeft geklikt.
-          {
-            if (geKlikt[i] == in[0]) //Als hij nog niet is geKlikt
-            {
-              fout = true //Als die fout is dan fout = true
-            }
-          }*/
-
-          //if (fout == false) //Is fout nog false? Dan is dit de winnaar. Anders opnieuw kijken.
-          //{
             lcd.setCursor(0,0);
             lcd.print(" The winner is: ");
             lcd.setCursor(0,2);
@@ -311,8 +296,6 @@ void menu()
 
             delay(4000);
             tijdTimer = 0; //Stop de timer
-          //}
-
           }
         }
         radio.stopListening(); //door te stoppen met luisteren wordt het een zender.
@@ -330,6 +313,13 @@ void menu()
       }
       break;
 
+      /*for (int i = 0; i <= e; i++) //loop door geklikt om te kijken of deze persoon al heeft geklikt.
+      {
+        if (geKlikt[i] == in[0]) //Als hij nog niet is geKlikt
+        {
+          fout = true //Als die fout is dan fout = true
+        }
+      }*/
 /************************************************************************************************/
 
       case 3: //Dobbelsteen
@@ -361,7 +351,7 @@ void menu()
         //(10010 - 10 = 10000) =< 10000 = true
         //(10011 - 10 = 10001) =< 10000 = false dus doorgaan.
         char aangemeld[4]; //een array met 4 plekjes
-        int e = 0;
+        int e = 0; //Voor het bijvoegen van dingen in het array
         unsigned char adr;
         unsigned long tijdTimer = 10000; //10 seconden wachten.
         unsigned long huidigeTijd = millis(); //tijd hoelang het programma al draait. Long omdat het om tijd gaat
@@ -375,7 +365,6 @@ void menu()
            aangemeld[e] = in[0]; //Elke keer als er iets binnenkomt dan wordt de waarde van de controller in de aangemelde array gegooid.
            e++;
            //Doordat er bij de controller maar 1 keer gedrukt kan worden staat alles erin.
-
            if (in[0] == '1')
            {
              Serial.println("Dit is controller 1");
@@ -387,17 +376,89 @@ void menu()
            else {
              Serial.println("controller niet gevonden");
            }
-
          }
-         digitalWrite(led, HIGH);
         }
+        int spelers = 0;
+        for (int i = 0; i < sizeof(aangemeld); i++) //Kan het variable van e ook gebruikt worden??
+        {
+          if (aangemeld[i] != 0)
+          {
+             spelers++;
+          }
+        }
+        Serial.println(e);
+        Serial.println(spelers);
+        int rondes;
+        int points[4] = {};
+        char pointName[4] = {};
+        while (spelers != rondes) //Rondes hetzelfde als het aantal mensen dat had gedrukt?
+        {
+          for (int a = 0; a < spelers; a++) //loop van 0 tot het aantal mensen dat heeft gedrukt.
+          {
+            lcd.setCursor(0,0);
+            lcd.print("Controller: ");
+            lcd.print(aangemeld[a]);
+            lcd.setCursor(0,2);
+            lcd.print("mag gooien");
 
-       digitalWrite(led, LOW);
-       delay(1000);
-       aantalDrukken = 1; //terug naar start Menu
-       lcd.clear();
-       activeren = LOW;
-      }
+            bool klik = false;
+            while (klik == false) //klik false?
+            {
+              if (radio.available()) //signaal binnen?
+              {
+                bool klaar = false;
+                char in2[] = {0};
+                radio.read(&in2, sizeof(in2));
+                if (in2[0] == aangemeld[a]) //Zelfde als degene die als eerste mocht gooien?
+                {
+                  int gooi = random(1,6); //maak een getal tussen de 1 en 6.
+                  points[a] = gooi; //De waarde van gooi in array points.
+                  pointName[a] = in2[0] //De controller naam van de gooier op dezelfde plek als de hoogste.
+
+                  klik = true;
+                }
+              }
+            }
+          }
+          rondes++ //Langs alle spelers gaan.
+        }
+        int aantal1, aantal2, totaal;
+        aantal1 = max(points[0], points[1]); //Max van deze twee in aantal1;
+        aantal2 = max(points[2], points[3]); //Max van deze twee in aantal2;
+        aantal = max(aantal1, aantal2); //max van de 4 in aantal.
+        Serial.println(aantal);
+        int winner/*[4] = {}*/;
+        int b;
+        for (int a = 0; a < 4; a++) //ga voor 4 keer kijken welk nummer het hoogste is.
+        {
+          /*if (points[a] == winner) //is er nog een keer de waarde van de winnaar?
+          {
+            b++
+          }*/
+
+          if (points[a] == aantal) //komt de waarde overeen met het getal in het array.
+          {
+            winner/*[b]*/ = a; //de waarde van a in winnaar stoppen.
+          }
+          //winner kan nu zijn {2,4,0,0} Controller 2 en 4 zijn dus dubbel en moeten nog een keer.
+        }
+        /*
+        De naam van de winnaar wordt uit het array gehaald.
+        pointName[0,3,2,0]
+        points[0,1,6,0]
+        Controller 2 is de winnaar met 6 punten.
+        */
+        Serial.print("Speler ");
+        Serial.print(pointName[winner]);
+        Serial.print("has won with: ");
+        Serial.print(pointName[winner]);
+        Serial.print("points\n");
+
+        delay(1000);
+        aantalDrukken = 1; //terug naar start Menu
+        lcd.clear();
+        activeren = LOW;
+       }
       break;
 
 /************************************************************************************************/
