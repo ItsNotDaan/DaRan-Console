@@ -351,7 +351,7 @@ void menu()
         //(10010 - 10 = 10000) =< 10000 = true
         //(10011 - 10 = 10001) =< 10000 = false dus doorgaan.
         char aangemeld[4]; //een array met 4 plekjes
-        int e = 0;
+        int e = 0; //Voor het bijvoegen van dingen in het array
         unsigned char adr;
         unsigned long tijdTimer = 10000; //10 seconden wachten.
         unsigned long huidigeTijd = millis(); //tijd hoelang het programma al draait. Long omdat het om tijd gaat
@@ -378,8 +378,35 @@ void menu()
            }
          }
         }
-        int grote = sizeof(aangemeld) / sizeof(aangemeld[0]);
-        for (int g = )
+        int spelers = 0;
+        for (int i = 0; i < sizeof(aangemeld); i++) //Kan het variable van e ook gebruikt worden??
+        {
+          if (aangemeld[i] != 0)
+          {
+             spelers++;
+          }
+        }
+        int rondes = 0;
+        while (spelers != rondes) //Rondes hetzelfde als het aantal mensen dat had gedrukt?
+        {
+          for (int a = 0; a < spelers; a++) //loop van 0 tot het aantal mensen dat heeft gedrukt.
+          {
+            lcd.setCursor(0,0);
+            lcd.print("Controller: ");
+            lcd.print(aangemeld[a]);
+            lcd.setCursor(0,2);
+            lcd.print("mag gooien");
+
+            bool klik = false;
+            while (klik == false) //klik false?
+            {
+              if 
+              klik = true;
+            }
+          }
+          rondes++
+        }
+
 
 
         digitalWrite(led, LOW);
