@@ -42,6 +42,7 @@ void setup()
   Serial.begin(9600); //Start een seriele verbinding.
 
   radio.begin(); //zorg dat de radio begint met luisteren
+  radio.setPALevel(RF24_PA_LOW);     // Dicht bij elkaar? dan kan low.
 
   radio.openReadingPipe(1, Rcon1);
   radio.openWritingPipe(con1);

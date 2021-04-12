@@ -62,6 +62,7 @@ void setup()
   pinMode(led, OUTPUT);
   Serial.begin(9600);
   radio.begin(); //start de zender
+  radio.setPALevel(RF24_PA_LOW);     // Dicht bij elkaar? dan kan low.
 
   radio.openReadingPipe(1, Rcon1); //adres dat ook in de constant werd aangegeven. Lezen
   radio.openReadingPipe(2, Rcon2); //adres dat ook in de constant werd aangegeven. Lezen
@@ -238,16 +239,16 @@ void menu()
 
             if (in[0] == '1')
             {
-              radio.openWritingPipe(con1);
               radio.stopListening(); //door te stoppen met luisteren wordt het een zender.
+              radio.openWritingPipe(con1);
               char text[] = "F"; //maak een array met karakters genaamd text. Stop hierin "1".
               radio.write(&text, sizeof(text)); //verstuur de data in de text.
               radio.startListening();
             }
             else if (in[0] == '2')
             {
-              radio.openWritingPipe(con2);
               radio.stopListening(); //door te stoppen met luisteren wordt het een zender.
+              radio.openWritingPipe(con2);
               char text[] = "F"; //maak een array met karakters genaamd text. Stop hierin "1".
               radio.write(&text, sizeof(text)); //verstuur de data in de text.
               radio.startListening();
@@ -297,10 +298,11 @@ void menu()
             delay(4000);
             tijdTimer = 0; //Stop de timer
           }
+
         }
         radio.stopListening(); //door te stoppen met luisteren wordt het een zender.
-        radio.openWritingPipe(con1);
         char eind[] = "4"; //maak een array met karakters genaamd text. Stop hierin "4".
+        radio.openWritingPipe(con1);
         radio.write(&eind, sizeof(eind)); //verstuur de data in de text.
 
         radio.openWritingPipe(con2);
@@ -451,7 +453,7 @@ void menu()
         Serial.print("Speler ");
         Serial.print(pointName[winner]);
         Serial.print("has won with: ");
-        Serial.print(pointName[winner]);
+        Serial.print(points[winner]);
         Serial.print("points\n");
 
         delay(1000);
