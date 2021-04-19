@@ -193,7 +193,7 @@ void menu()
         lcd.print("     Active     ");
 
         radio.stopListening(); //door te stoppen met luisteren wordt het een zender.
-        char text[] = "1"; //maak een array met karakters genaamd text. Stop hierin "1".
+        unsigned char text[] = "1"; //maak een array met karakters genaamd text. Stop hierin "1".
 
         radio.openWritingPipe(con2);
         radio.write(&text, sizeof(text)); //verstuur de data in de text.
@@ -226,12 +226,12 @@ void menu()
         //.....
         //(10010 - 10 = 10000) =< 10000 = true
         //(10011 - 10 = 10001) =< 10000 = false dus doorgaan.
-        //char geKlikt[2] = {0}; //een array met 4 plekjes
-        //int e = 0;
-        unsigned long tijdTimer = random(5000, 20000); //random tijd tussen de 5 en 20 seconden
-        unsigned long huidigeTijd = millis(); //tijd hoelang het programma al draait. Long omdat het om tijd gaat
+        //unsigned long tijdTimer = random(5000, 20000); //random tijd tussen de 5 en 20 seconden
+        long tijdTimer = 5000; //for testing
+        long huidigeTijd = millis(); //tijd hoelang het programma al draait. Long omdat het om tijd gaat
         while (millis() - huidigeTijd < tijdTimer) //doe voor het aantal seconden alles wat in de while staat.
         {
+          //Serial.write("Tijd 1");
           if (radio.available()) //als er iets binnenkomt.
           {
             char in[] = {0};
@@ -255,7 +255,7 @@ void menu()
             }
           }
         }
-        radio.startListening();
+        //radio.startListening();
 
         lcd.setCursor(0,0);
         lcd.print("CLICK THE BUTTON");
@@ -266,8 +266,9 @@ void menu()
         huidigeTijd = millis(); //tijd hoelang het programma al draait.
         while (millis() - huidigeTijd < tijdTimer) //doe voor het aantal seconden alles wat in de while staat.
         {
+          //Serial.write("Tijd 2");
         //animatie dat timer over is
-          if (radio.available())
+          if(radio.available())
           {
             Serial.println("Radio is avaiable");
             char in[] = {0};
@@ -298,8 +299,8 @@ void menu()
             delay(4000);
             tijdTimer = 0; //Stop de timer
           }
-
         }
+
         radio.stopListening(); //door te stoppen met luisteren wordt het een zender.
         char eind[] = "4"; //maak een array met karakters genaamd text. Stop hierin "4".
         radio.openWritingPipe(con1);
@@ -343,8 +344,11 @@ void menu()
         radio.stopListening(); //door te stoppen met luisteren wordt het een zender.
 
         char text[] = "2"; //maak een array met karakters genaamd text. Stop hierin "1".
+        radio.openWritingPipe(con2);
         radio.write(&text, sizeof(text)); //verstuur de data in de text.
 
+        radio.openWritingPipe(con1);
+        radio.write(&text, sizeof(text)); //verstuur de data in de text.
         radio.startListening();
 
         //(11 - 10 = 1) < 10000 =  true
@@ -415,16 +419,16 @@ void menu()
                 {
                   int gooi = random(1,6); //maak een getal tussen de 1 en 6.
                   points[a] = gooi; //De waarde van gooi in array points.
-                  pointName[a] = in2[0] //De controller naam van de gooier op dezelfde plek als de hoogste.
+                  pointName[a] = in2[0]; //De controller naam van de gooier op dezelfde plek als de hoogste.
 
                   klik = true;
                 }
               }
             }
           }
-          rondes++ //Langs alle spelers gaan.
+          rondes++; //Langs alle spelers gaan.
         }
-        int aantal1, aantal2, totaal;
+        int aantal1, aantal2, aantal;
         aantal1 = max(points[0], points[1]); //Max van deze twee in aantal1;
         aantal2 = max(points[2], points[3]); //Max van deze twee in aantal2;
         aantal = max(aantal1, aantal2); //max van de 4 in aantal.
