@@ -193,7 +193,7 @@ void menu()
         lcd.print("     Active     ");
 
         radio.stopListening(); //door te stoppen met luisteren wordt het een zender.
-        unsigned char text[] = "1"; //maak een array met karakters genaamd text. Stop hierin "1".
+        char text = '1'; //maak een array met karakters genaamd text. Stop hierin "1".
 
         radio.openWritingPipe(con2);
         radio.write(&text, sizeof(text)); //verstuur de data in de text.
@@ -234,22 +234,22 @@ void menu()
           //Serial.write("Tijd 1");
           if (radio.available()) //als er iets binnenkomt.
           {
-            char in[] = {0};
+            char in;
             radio.read(&in, sizeof(in)); //alles dat wordt ingelezen wordt opgeslagen in de char in.
 
-            if (in[0] == '1')
+            if (in == '1')
             {
               radio.stopListening(); //door te stoppen met luisteren wordt het een zender.
               radio.openWritingPipe(con1);
-              char text[] = "F"; //maak een array met karakters genaamd text. Stop hierin "1".
+              char text = 'F'; //maak een array met karakters genaamd text. Stop hierin "1".
               radio.write(&text, sizeof(text)); //verstuur de data in de text.
               radio.startListening();
             }
-            else if (in[0] == '2')
+            else if (in == '2')
             {
               radio.stopListening(); //door te stoppen met luisteren wordt het een zender.
               radio.openWritingPipe(con2);
-              char text[] = "F"; //maak een array met karakters genaamd text. Stop hierin "1".
+              char text = 'F'; //maak een array met karakters genaamd text. Stop hierin "1".
               radio.write(&text, sizeof(text)); //verstuur de data in de text.
               radio.startListening();
             }
@@ -271,7 +271,7 @@ void menu()
           if(radio.available())
           {
             Serial.println("Radio is avaiable");
-            char in[] = {0};
+            char in;
             radio.read(&in, sizeof(in)); //alles dat wordt ingelezen wordt opgeslagen in de char in.
 
             lcd.setCursor(0,0);
@@ -280,15 +280,15 @@ void menu()
             lcd.print("   Player:");
             lcd.setCursor(11,2);
             lcd.print(in[0]);
-            char win[] = "T"; //maak een array met karakters genaamd text. Stop hierin "T" van tone.
-            if (in[0] == '1') //Winnaar con1?
+            char win = 'T'; //maak een array met karakters genaamd text. Stop hierin "T" van tone.
+            if (in == '1') //Winnaar con1?
             {
               radio.stopListening(); //door te stoppen met luisteren wordt het een zender.
               radio.openWritingPipe(con1);
               radio.write(&win, sizeof(win)); //verstuur de data in de text.
               radio.startListening();
             }
-            else if (in[0] == '2')//Winnaar con2?
+            else if (in == '2')//Winnaar con2?
             {
               radio.stopListening(); //door te stoppen met luisteren wordt het een zender.
               radio.openWritingPipe(con2);
@@ -302,7 +302,7 @@ void menu()
         }
 
         radio.stopListening(); //door te stoppen met luisteren wordt het een zender.
-        char eind[] = "4"; //maak een array met karakters genaamd text. Stop hierin "4".
+        char eind = '4'; //maak een array met karakters genaamd text. Stop hierin "4".
         radio.openWritingPipe(con1);
         radio.write(&eind, sizeof(eind)); //verstuur de data in de text.
 
@@ -343,7 +343,7 @@ void menu()
 
         radio.stopListening(); //door te stoppen met luisteren wordt het een zender.
 
-        char text[] = "2"; //maak een array met karakters genaamd text. Stop hierin "1".
+        char text = '2'; //maak een array met karakters genaamd text. Stop hierin "1".
         radio.openWritingPipe(con2);
         radio.write(&text, sizeof(text)); //verstuur de data in de text.
 
@@ -365,17 +365,17 @@ void menu()
         {
          if (radio.available()) //als er iets binnenkomt.
          {
-           char in[] = {0};
+           char in;
            radio.read(&in, sizeof(in)); //alles dat wordt ingelezen wordt opgeslagen in de char in.
            //Serial.println(in);
-           aangemeld[e] = in[0]; //Elke keer als er iets binnenkomt dan wordt de waarde van de controller in de aangemelde array gegooid.
+           aangemeld[e] = in; //Elke keer als er iets binnenkomt dan wordt de waarde van de controller in de aangemelde array gegooid.
            e++;
            //Doordat er bij de controller maar 1 keer gedrukt kan worden staat alles erin.
-           if (in[0] == '1')
+           if (in == '1')
            {
              Serial.println("Dit is controller 1");
            }
-           else if (in[0] == '2')
+           else if (in == '2')
            {
              Serial.println("Dit is controller 2");
            }
@@ -413,13 +413,13 @@ void menu()
               if (radio.available()) //signaal binnen?
               {
                 bool klaar = false;
-                char in2[] = {0};
+                char in2;
                 radio.read(&in2, sizeof(in2));
-                if (in2[0] == aangemeld[a]) //Zelfde als degene die als eerste mocht gooien?
+                if (in2 == aangemeld[a]) //Zelfde als degene die als eerste mocht gooien?
                 {
                   int gooi = random(1,6); //maak een getal tussen de 1 en 6.
                   points[a] = gooi; //De waarde van gooi in array points.
-                  pointName[a] = in2[0]; //De controller naam van de gooier op dezelfde plek als de hoogste.
+                  pointName[a] = in2; //De controller naam van de gooier op dezelfde plek als de hoogste.
 
                   klik = true;
                 }
