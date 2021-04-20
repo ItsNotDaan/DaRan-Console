@@ -60,7 +60,7 @@ void loop()
   {
     //Serial.println(adr);
     Serial.println("Radio.available");
-    char text[] = {0}; //maak een array met karakters genaamd text. Stop hierin "1".
+    char text; //maak een array met karakters genaamd text. Stop hierin "1".
     radio.read(&text, sizeof(text)); //alles dat wordt ingelezen wordt opgeslagen in de char text.
     Serial.println(text);
 
@@ -79,25 +79,25 @@ void loop()
         {
           Serial.println("Knop gedrukt");
           radio.stopListening(); //door te stoppen met luisteren wordt het een zender
-          const char in[] = "1"; //maak een array met karakters genaamd in. Stop hierin "1".
+          char in = '1'; //maak een array met karakters genaamd in. Stop hierin "1".
           radio.write(&in, sizeof(in)); //data die in 'in' staat wordt verstuurd.
           radio.startListening();
           isGedrukt = HIGH;
         }
         if (radio.available()) //Als tekst 4 binnenkomt.
         {
-          char in[] = {0};
+          char in;
           radio.read(&in, sizeof(in)); //alles dat wordt ingelezen wordt opgeslagen in de char text.
           Serial.println("Signaal binnen");
           Serial.println(text);
-          if (in[0] == '4') //Einde van game 4.
+          if (in == '4') //Einde van game 4.
           {
             Serial.println("Signaal 4 is binnen");
             digitalWrite(vibr, LOW);
             noTone(buzz);
             end = true;
           }
-          else if (in[0] == 'F') //Te snel gedrukt?
+          else if (in == 'F') //Te snel gedrukt?
           {
             tone(buzz, 1000); //normaal laten trillen
             digitalWrite(vibr, HIGH);
@@ -105,7 +105,7 @@ void loop()
             noTone(buzz);
             digitalWrite(vibr, LOW);
           }
-          else if (in[0] == 'T')//Winnaar?
+          else if (in == 'T')//Winnaar?
           {
             tone(buzz, 1000);
             digitalWrite(vibr, HIGH);
@@ -136,7 +136,7 @@ void loop()
         if (digitalRead(knop) == HIGH && isGedrukt == LOW) //Als de knop wordt geklikt.
         {
           radio.stopListening(); //door te stoppen met luisteren wordt het een zender
-          const char in[] = "1"; //maak een array met karakters genaamd in. Stop hierin "1".
+          char in = '1'; //maak een array met karakters genaamd in. Stop hierin "1".
           radio.write(&in, sizeof(in)); //data die in 'in' staat wordt verstuurd.
           radio.startListening();
           isGedrukt = HIGH;
