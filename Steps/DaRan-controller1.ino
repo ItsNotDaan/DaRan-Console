@@ -52,12 +52,10 @@ void setup()
 // Main loop
 void loop()
 {
-  //Serial.println("Loop");
-  if (radio.available()) //als er iets binnenkomt.
+
+  if (radio.available()) //iof something is received.
   {
-    //Serial.println(adr);
     Serial.println("Radio.available");
-    //char text[] = {""}; //maak een array met karakters genaamd text. Stop hierin "1".
     char text;
     radio.read(&text, sizeof(text)); //alles dat wordt ingelezen wordt opgeslagen in de char text.
     Serial.println(text);
