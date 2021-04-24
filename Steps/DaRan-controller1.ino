@@ -30,7 +30,8 @@ RF24 radio(9, 8);  // CE, CSN. Dit is nodig voor de librarie om te kijken welke 
 int buzz = 7; //Buzzer
 int vibr = 5; //Vibration motor
 bool isGedrukt = LOW;
-unsigned char adr;
+
+//void(* resetFunc) (void) = 0;
 
 // Setup
 void setup()
@@ -42,7 +43,6 @@ void setup()
   Serial.begin(9600); //Start een seriele verbinding.
 
   radio.begin(); //zorg dat de radio begint met luisteren
-  radio.setPALevel(RF24_PA_LOW);     // Dicht bij elkaar? dan kan low.
 
   radio.openReadingPipe(1, Rcon1);
   radio.openWritingPipe(con1);
@@ -52,50 +52,47 @@ void setup()
 // Main loop
 void loop()
 {
- // if (digitalRead(knop) == HIGH)
- // {
-   Serial.println("Loop");
- // }
-  if (radio.available()) //als er iets binnenkomt.
+
+  if (radio.available()) //iof something is received.
   {
-    //Serial.println(adr);
     Serial.println("Radio.available");
-    char text; //maak een array met karakters genaamd text. Stop hierin "1".
+    char text;
     radio.read(&text, sizeof(text)); //alles dat wordt ingelezen wordt opgeslagen in de char text.
     Serial.println(text);
 
-    if (text[0] == '1')//is de binnengekomen text '1'? Spel 1 start.
+    if (text == '1')//is de binnengekomen text '1'? Spel 1 start.
     {
       radio.startListening();
       Serial.println("Game 1");
       bool end = false;
 
-      //Dit kan dus niet, hij moet wachten hiero. Anders gaat die verder
       while (end == false) //Geen signaal binnen? blijf wachten
       {
         //Serial.println("Wacht op signaal");
 
-        if (digitalRead(knop) == HIGH && isGedrukt == LOW) //Als de knop wordt geklikt.
+        if (digitalRead(knop) == LOW && isGedrukt == LOW) //Als de knop wordt geklikt.
         {
+          char uit = '1'; //maak een array met karakters genaamd in. Stop hierin "1".
           Serial.println("Knop gedrukt");
           radio.stopListening(); //door te stoppen met luisteren wordt het een zender
-          char in = '1'; //maak een array met karakters genaamd in. Stop hierin "1".
-          radio.write(&in, sizeof(in)); //data die in 'in' staat wordt verstuurd.
-          radio.startListening();
+          radio.write(&uit, sizeof(uit)); //data die in 'in' staat wordt verstuurd.
           isGedrukt = HIGH;
+          radio.startListening();
         }
+
         if (radio.available()) //Als tekst 4 binnenkomt.
         {
           char in;
           radio.read(&in, sizeof(in)); //alles dat wordt ingelezen wordt opgeslagen in de char text.
           Serial.println("Signaal binnen");
-          Serial.println(text);
           if (in == '4') //Einde van game 4.
           {
             Serial.println("Signaal 4 is binnen");
             digitalWrite(vibr, LOW);
             noTone(buzz);
             end = true;
+            //resetFunc();
+            //Serial.println("Klaar");
           }
           else if (in == 'F') //Te snel gedrukt?
           {
@@ -110,13 +107,12 @@ void loop()
             tone(buzz, 1000);
             digitalWrite(vibr, HIGH);
           }
-
         }
       }
       isGedrukt = LOW;
     }
 
-    else if (text == 2)
+    else if (text == '2')
     {
       Serial.println("text = 1");
       //(11 - 10 = 1) < 10000 =  true
@@ -136,7 +132,7 @@ void loop()
         if (digitalRead(knop) == HIGH && isGedrukt == LOW) //Als de knop wordt geklikt.
         {
           radio.stopListening(); //door te stoppen met luisteren wordt het een zender
-          char in = '1'; //maak een array met karakters genaamd in. Stop hierin "1".
+          const char in[] = "1"; //maak een array met karakters genaamd in. Stop hierin "1".
           radio.write(&in, sizeof(in)); //data die in 'in' staat wordt verstuurd.
           radio.startListening();
           isGedrukt = HIGH;
@@ -146,7 +142,7 @@ void loop()
       noTone(buzz);
     }
 
-    else if (text == 3)
+    else if (text == '3')
     {
       tone(buzz, 1500);
     }
