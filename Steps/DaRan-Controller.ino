@@ -44,6 +44,12 @@ void setup()
 
   radio.begin(); //Init the transceiver
 
+  Serial.print("Radio aangesloten : ");
+  Serial.println(radio.isChipConnected() ? "JA" : "NEE");
+
+  radio.setPayloadSize(sizeof(char));
+  radio.setPALevel(RF24_PA_LOW);
+
   radio.openReadingPipe(1, Rcon1); //startListening on pipe 1. Pipe 0 is always for sending.
   radio.openWritingPipe(con1); //startSending on pipe 0. This is the standard pipe for sending.
   radio.startListening(); //Start listening to signals.
@@ -74,7 +80,13 @@ void loop()
           char uit = '1'; //Make an character named uit. Put '1' in this char. This means controller 1 to the hub.
           Serial.println("Knop gedrukt"); //Show that the button has been pressed. It always gets here.
           radio.stopListening(); //Start stending.
-          radio.write(&uit, sizeof(uit)); //Send the data that has been stored in the char uit.
+
+          if (radio.write(&uit, sizeof(uit))) {
+            Serial.print(F("UIT:")); Serial.println(uit);
+          } else {
+            Serial.println(F("UIT: verzendfout"));
+          }
+          //radio.write(&uit, sizeof(uit)); //Send the data that has been stored in the char uit.
           isGedrukt = HIGH; //isGedrukt has been put on high. This will allow to not constantly press the button. No cheating ;)
           radio.startListening(); //Start listening.
         }

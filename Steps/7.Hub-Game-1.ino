@@ -35,7 +35,13 @@ void setup()
 {
   pinMode(knopM, INPUT_PULLUP); //pinmode for the button.
   Serial.begin(9600);
-  radio.begin(); //start the transciever
+  radio.begin(); //Init the transceiver
+
+  Serial.print("Radio aangesloten : ");
+  Serial.println(radio.isChipConnected() ? "JA" : "NEE");
+
+  radio.setPayloadSize(sizeof(char));
+  radio.setPALevel(RF24_PA_LOW);
 
   radio.openReadingPipe(1, Rcon1); //Reading pipe 1 can always be read. Pipe 0 is always used for sending.
   //The openWritingPipe has been placed lower because the hub officially needs to send to multiple recievers.
