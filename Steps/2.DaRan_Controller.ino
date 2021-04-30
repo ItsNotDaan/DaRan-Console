@@ -70,7 +70,8 @@ void loop()
   if (radio.available()) //If something is received. This is to know which game is being started.
   {
     Serial.println("Radio.available");
-    radio.read(t_message &bericht, sizeof(t_message));
+    //radio.read(t_message &bericht, sizeof(t_message));
+    getMessage(bericht);
     char text = bericht.command;
     radio.startListening(); //Start listening  to incoming signals.
 
@@ -89,7 +90,8 @@ void loop()
 
           bericht.verzenderUID = 1;
           bericht.command = '1';
-          radio.write(t_message &bericht, sizeof(t_message));
+          sendMessage(bericht);
+          //radio.write(t_message &bericht, sizeof(t_message));
 
           isGedrukt = HIGH; //isGedrukt has been put on high. This will allow to not constantly press the button. No cheating ;)
           radio.startListening(); //Start listening.
@@ -98,7 +100,8 @@ void loop()
         if (radio.available()) //If a  signal has been found.
         {
           Serial.println("Signaal binnen"); //Show that a signal has been found.
-          radio.read(t_message &bericht, sizeof(t_message));
+          //radio.read(t_message &bericht, sizeof(t_message));
+          getMessage(bericht);
           char in = bericht.command;
           if (bericht.alleCons == 1) //gaat het bericht naar alle controllers?
           {
@@ -169,4 +172,14 @@ void loop()
     ///delay(1000); //For testing purposes.
     noTone(buzz); //Make sure the buzzer is out.
   }
+}
+
+void sendMessage(t_message &msg)
+{
+  radio.write(&msg, sizeof(t_message));
+}
+
+bool getMessage(t_message &msg)
+{
+  radio.read(&msg, sizeof(t_message));
 }

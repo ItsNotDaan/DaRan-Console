@@ -67,7 +67,8 @@ void loop()
     radio.stopListening();
     bericht.command = '1'; //command 1 tells the cons that game 1 starts.
     bericht.alleCons = 1;
-    radio.write(t_message &bericht, sizeof(t_message)); //Send the data in 'text'.
+    sendMessage(bericht);
+    //radio.write(t_message &bericht, sizeof(t_message)); //Send the data in 'text'.
     bericht.alleCons = 0;
     radio.startListening();
     //The above needs to be done to let the controller know it starts game 1. It always does this. No bug.
@@ -89,8 +90,8 @@ void loop()
       if (radio.available()) //If a signal is available. Here lies the bug. one times it does find something and the next time not.
       {
         Serial.println("Radio is available");
-        radio.read(t_message &bericht, sizeof(t_message));
-
+        //radio.read(t_message &bericht, sizeof(t_message));
+        getMessage(bericht);
         char in = bericht.verzenderUID; //Make a local char called "in"
         //Now it knows which controller has won.
 
@@ -106,7 +107,8 @@ void loop()
           radio.openWritingPipe(con1);
           bericht.command = 'T'; //command 1 tells the cons that game 1 starts //write 'T' to con1. It knows it has won and will execute his code.
           bericht.ontvangerUID = 1;
-          radio.write(t_message &bericht, sizeof(t_message));
+          sendMessage(bericht);
+          //radio.write(t_message &bericht, sizeof(t_message));
           radio.startListening();
         }
         delay(4000); //Show for 4 seconds who has won.
@@ -117,9 +119,20 @@ void loop()
 
     bericht.command = '4'; //Put "4" in this char. //This will be send to all the controllers. They know they can go back to the beginning.
     bericht.alleCons = 1;
-    radio.write(t_message &bericht, sizeof(t_message)); //Send the data in 'text'.
+    sendMessage(bericht);
+    //radio.write(t_message &bericht, sizeof(t_message)); //Send the data in 'text'.
     bericht.alleCons = 0;
     radio.startListening();
     lcd.clear();
   }
+}
+
+void sendMessage(t_message &msg)
+{
+  radio.write(&msg, sizeof(t_message))
+}
+
+bool getMessage(t_message &msg)
+{
+  radio.read(&msg, sizeof(t_message));
 }
