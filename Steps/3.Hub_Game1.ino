@@ -19,8 +19,8 @@
 // ----- Declare Constants -----
 #define knopM 4 //The button to activate the game.
 
-const byte Rcon1[6] = "10000"; //Controller 1 adress for recieving.
-const byte con1[6] = "10001"; //Controller 1 adress for sending.
+uint8_t adresHub[] = {0x00, 0xCE, 0xCC, 0xCE, 0xCC}; //Het adres voor de Hub
+uint8_t adresCon[] = {0x01, 0xCE, 0xCC, 0xCE, 0xCC}; //Het adres voor alle controllers
 // ----- Declare Objects -----
 
 LiquidCrystal_I2C lcd(0x27, 2, 1, 0, 4, 5, 6, 7, 3, POSITIVE); //For the lcd
@@ -29,23 +29,32 @@ RF24 radio(9, 8);  // CE, CSN. This is for connecting the CE and the CSN pins of
 // ----- Declare subroutines and/or functions -----
 
 // ----- Declare Global Variables -----
+struct t_message
+{
+  uint8_t alleCons;
+  uint8_t verzenderUID;
+  uint8_t ontvangerUID;
+  char command;
+} bericht; //Var voor het bericht bericht.verzenderUID =
 
 // Setup
 void setup()
 {
   pinMode(knopM, INPUT_PULLUP); //pinmode for the button.
   Serial.begin(9600);
+
   radio.begin(); //Init the transceiver
 
   Serial.print("Radio aangesloten : ");
   Serial.println(radio.isChipConnected() ? "JA" : "NEE");
 
-  radio.setPayloadSize(sizeof(char));
+  radio.setPayloadSize(sizeof(t_message));
   radio.setPALevel(RF24_PA_LOW);
 
-  radio.openReadingPipe(1, Rcon1); //Reading pipe 1 can always be read. Pipe 0 is always used for sending.
-  //The openWritingPipe has been placed lower because the hub officially needs to send to multiple recievers.
-  radio.startListening(); //start listening for signals.
+  radio.openWritingPipe(adresCon); //Schrijf altijd naar de controllers
+  radio.openReadingPipe(1, adresHub); //Luister altijd naar de controllers
+  radio.startListening(); //Start listening to signals.
+
   lcd.begin(16,2);
   lcd.home(); //Init the LCD
 }
@@ -55,10 +64,11 @@ void loop()
 {
  if (digitalRead(knopM) == HIGH) //If the button is pressed.
  {
-    char text = '1'; //Make an character named text. Put "1" in this char.
     radio.stopListening();
-    radio.openWritingPipe(con1); //Now it writes to con1.
-    radio.write(&text, sizeof(text)); //Send the data in 'text'.
+    bericht.command = '1'; //command 1 tells the cons that game 1 starts.
+    bericht.alleCons = 1;
+    radio.write(t_message &bericht, sizeof(t_message)); //Send the data in 'text'.
+    bericht.alleCons = 0;
     radio.startListening();
     //The above needs to be done to let the controller know it starts game 1. It always does this. No bug.
 
@@ -79,8 +89,9 @@ void loop()
       if (radio.available()) //If a signal is available. Here lies the bug. one times it does find something and the next time not.
       {
         Serial.println("Radio is available");
-        char in; //Make a local char called "in".
-        radio.read(&in, sizeof(in)); //The incoming char gets stored in "in".
+        radio.read(t_message &bericht, sizeof(t_message));
+
+        char in = bericht.verzenderUID; //Make a local char called "in"
         //Now it knows which controller has won.
 
         lcd.setCursor(0,0);
@@ -89,12 +100,13 @@ void loop()
         lcd.print("   Player:");
         lcd.setCursor(11,2);
         lcd.print(in); //Show on the LCD who has won.
-        char win = 'T'; //Make an character named win. Put "T" in this char
         if (in == '1') //Winner con1? '1' means that controller 1 has won.
         {
           radio.stopListening(); //start writing
           radio.openWritingPipe(con1);
-          radio.write(&win, sizeof(win)); //write 'T' to con1. It knows it has won and will execute his code.
+          bericht.command = 'T'; //command 1 tells the cons that game 1 starts //write 'T' to con1. It knows it has won and will execute his code.
+          bericht.ontvangerUID = 1;
+          radio.write(t_message &bericht, sizeof(t_message));
           radio.startListening();
         }
         delay(4000); //Show for 4 seconds who has won.
@@ -102,9 +114,11 @@ void loop()
       }
     }
     radio.stopListening(); //Start writing.
-    char eind = '4'; //Make an character named eind. Put "4" in this char. //This will be send to all the controllers. They know they can go back to the beginning.
-    radio.openWritingPipe(con1);
-    radio.write(&eind, sizeof(eind)); //verstuur de data in de text.
+
+    bericht.command = '4'; //Put "4" in this char. //This will be send to all the controllers. They know they can go back to the beginning.
+    bericht.alleCons = 1;
+    radio.write(t_message &bericht, sizeof(t_message)); //Send the data in 'text'.
+    bericht.alleCons = 0;
     radio.startListening();
     lcd.clear();
   }
