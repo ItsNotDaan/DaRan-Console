@@ -133,42 +133,6 @@ void loop()
       }
       isGedrukt = LOW; //The next game the button will be able to be pressed again. Its a reset.
     }
-
-    else if (text == '2') //Start game 2 Not important now.
-    {
-      Serial.println("text = 1");
-      //(11 - 10 = 1) < 10000 =  true
-      //(12 - 10 = 2) < 10000 = true
-      //.....
-      //(10010 - 10 = 10000) =< 10000 = true
-      //(10011 - 10 = 10001) =< 10000 = false dus doorgaan.
-
-      unsigned long tijdTimer = 10000; //10 seconden wachten.
-      unsigned long huidigeTijd = millis(); //tijd hoelang het programma al draait. Long omdat het om tijd gaat
-      while (millis() - huidigeTijd < tijdTimer) //doe 10 seconden alles wat in de while staat.
-      {
-        if (millis() - huidigeTijd > 8000)
-        {
-            tone(buzz, 2000);
-        }
-        if (digitalRead(knop) == HIGH && isGedrukt == LOW) //Als de knop wordt geklikt.
-        {
-          radio.stopListening(); //door te stoppen met luisteren wordt het een zender
-          const char in[] = "1"; //maak een array met karakters genaamd in. Stop hierin "1".
-          radio.write(&in, sizeof(in)); //data die in 'in' staat wordt verstuurd.
-          radio.startListening();
-          isGedrukt = HIGH;
-        }
-      }
-      isGedrukt = LOW;
-      noTone(buzz);
-    }
-
-    else if (text == '3')
-    {
-      tone(buzz, 1500);
-    }
-
     ///delay(1000); //For testing purposes.
     noTone(buzz); //Make sure the buzzer is out.
   }
@@ -176,7 +140,9 @@ void loop()
 
 void sendMessage(t_message &msg)
 {
+  radio.stopListening(); //Start writing.
   radio.write(&msg, sizeof(t_message));
+  radio.startListening();
 }
 
 bool getMessage(t_message &msg)
