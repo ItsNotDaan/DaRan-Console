@@ -30,7 +30,7 @@ RF24 radio(9, 8);  // CE, CSN. This is for connecting the CE and the CSN pins of
 // ----- Declare Global Variables -----
 int buzz = 7; //Buzzer
 int vibr = 5; //Vibration motor
-bool isGedrukt = LOW; //For making sure the controller can only press once.
+bool isGedrukt = false; //For making sure the controller can only press once.
 
 struct t_message
 {
@@ -83,7 +83,7 @@ void loop()
       while (end == false) //While the end is false this while will be active.
       {
         //Serial.println("Wacht op signaal");
-        if (digitalRead(knop) == LOW && isGedrukt == LOW) //If the button is pressed and the button has not yes been pressed. This way there can only be pressed ones a game.
+        if (digitalRead(knop) == LOW && isGedrukt == false) //If the button is pressed and the button has not yes been pressed. This way there can only be pressed ones a game.
         {
           Serial.println("Knop gedrukt"); //Show that the button has been pressed. It always gets here.
           radio.stopListening(); //Start stending.
@@ -93,7 +93,7 @@ void loop()
           sendMessage(bericht);
           //radio.write(t_message &bericht, sizeof(t_message));
 
-          isGedrukt = HIGH; //isGedrukt has been put on high. This will allow to not constantly press the button. No cheating ;)
+          isGedrukt = true; //isGedrukt has been put on high. This will allow to not constantly press the button. No cheating ;)
           radio.startListening(); //Start listening.
         }
 
@@ -131,7 +131,8 @@ void loop()
           }
         }
       }
-      isGedrukt = LOW; //The next game the button will be able to be pressed again. Its a reset.
+      //while(digitalRead(knop) == LOW);
+      isGedrukt = false; //The next game the button will be able to be pressed again. Its a reset.
     }
 
     else if (text == '2') //Start game 2 Not important now.
@@ -157,10 +158,10 @@ void loop()
           const char in[] = "1"; //maak een array met karakters genaamd in. Stop hierin "1".
           radio.write(&in, sizeof(in)); //data die in 'in' staat wordt verstuurd.
           radio.startListening();
-          isGedrukt = HIGH;
+          isGedrukt = true;
         }
       }
-      isGedrukt = LOW;
+      isGedrukt = false;
       noTone(buzz);
     }
 

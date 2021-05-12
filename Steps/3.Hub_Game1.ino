@@ -83,7 +83,7 @@ void loop()
     //(10010 - 10 = 10000) =< 10000 = true
     //(10011 - 10 = 10001) =< 10000 = false so go out of the while.
     long tijdTimer = 5000; //Let the while wait for 5 seconds.
-    long huidigeTijd = millis();
+    unsigned long huidigeTijd = millis();
     while (millis() - huidigeTijd < tijdTimer) //Do the stuff in the while for 5 secs.
     {
       //Serial.println("while");
@@ -104,7 +104,6 @@ void loop()
         if (in == '1') //Winner con1? '1' means that controller 1 has won.
         {
           radio.stopListening(); //start writing
-          radio.openWritingPipe(con1);
           bericht.command = 'T'; //command 1 tells the cons that game 1 starts //write 'T' to con1. It knows it has won and will execute his code.
           bericht.ontvangerUID = 1;
           sendMessage(bericht);
@@ -129,7 +128,7 @@ void loop()
 
 void sendMessage(t_message &msg)
 {
-  radio.write(&msg, sizeof(t_message))
+  radio.write(&msg, sizeof(t_message));
 }
 
 bool getMessage(t_message &msg)
