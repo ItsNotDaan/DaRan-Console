@@ -134,6 +134,7 @@ void loop()
       //while(digitalRead(knop) == LOW);
       isGedrukt = false; //The next game the button will be able to be pressed again. Its a reset.
     }
+<<<<<<< HEAD
 
     else if (text == '2') //Start game 2 Not important now.
     {
@@ -170,6 +171,8 @@ void loop()
       tone(buzz, 1500);
     }
 
+=======
+>>>>>>> ed4c6ff994c8390f3ccf6b25ff997d59a8f96951
     ///delay(1000); //For testing purposes.
     noTone(buzz); //Make sure the buzzer is out.
   }
@@ -177,7 +180,9 @@ void loop()
 
 void sendMessage(t_message &msg)
 {
+  radio.stopListening(); //Start writing.
   radio.write(&msg, sizeof(t_message));
+  radio.startListening();
 }
 
 bool getMessage(t_message &msg)

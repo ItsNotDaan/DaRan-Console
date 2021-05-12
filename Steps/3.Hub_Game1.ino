@@ -64,13 +64,11 @@ void loop()
 {
  if (digitalRead(knopM) == HIGH) //If the button is pressed.
  {
-    radio.stopListening();
     bericht.command = '1'; //command 1 tells the cons that game 1 starts.
     bericht.alleCons = 1;
     sendMessage(bericht);
     //radio.write(t_message &bericht, sizeof(t_message)); //Send the data in 'text'.
     bericht.alleCons = 0;
-    radio.startListening();
     //The above needs to be done to let the controller know it starts game 1. It always does this. No bug.
 
     lcd.clear();
@@ -92,7 +90,7 @@ void loop()
         Serial.println("Radio is available");
         //radio.read(t_message &bericht, sizeof(t_message));
         getMessage(bericht);
-        char in = bericht.verzenderUID; //Make a local char called "in"
+        //int in = bericht.verzenderUID; //Make a local char called "in"
         //Now it knows which controller has won.
 
         lcd.setCursor(0,0);
@@ -100,35 +98,40 @@ void loop()
         lcd.setCursor(0,2);
         lcd.print("   Player:");
         lcd.setCursor(11,2);
-        lcd.print(in); //Show on the LCD who has won.
-        if (in == '1') //Winner con1? '1' means that controller 1 has won.
+        lcd.print(bericht.verzenderUID); //Show on the LCD who has won.
+        if (bericht.verzenderUID == 1) //Winner con1? '1' means that controller 1 has won.
         {
+<<<<<<< HEAD
           radio.stopListening(); //start writing
+=======
+>>>>>>> ed4c6ff994c8390f3ccf6b25ff997d59a8f96951
           bericht.command = 'T'; //command 1 tells the cons that game 1 starts //write 'T' to con1. It knows it has won and will execute his code.
           bericht.ontvangerUID = 1;
           sendMessage(bericht);
           //radio.write(t_message &bericht, sizeof(t_message));
-          radio.startListening();
         }
         delay(4000); //Show for 4 seconds who has won.
         tijdTimer = 0; //make tijdTimer 0. Now it will go out of the while.
       }
     }
-    radio.stopListening(); //Start writing.
-
     bericht.command = '4'; //Put "4" in this char. //This will be send to all the controllers. They know they can go back to the beginning.
     bericht.alleCons = 1;
     sendMessage(bericht);
     //radio.write(t_message &bericht, sizeof(t_message)); //Send the data in 'text'.
     bericht.alleCons = 0;
-    radio.startListening();
     lcd.clear();
   }
 }
 
 void sendMessage(t_message &msg)
 {
+<<<<<<< HEAD
   radio.write(&msg, sizeof(t_message));
+=======
+  radio.stopListening(); //Start writing.
+  radio.write(&msg, sizeof(t_message));
+  radio.startListening();
+>>>>>>> ed4c6ff994c8390f3ccf6b25ff997d59a8f96951
 }
 
 bool getMessage(t_message &msg)
