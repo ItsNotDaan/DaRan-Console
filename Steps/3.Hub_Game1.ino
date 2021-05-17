@@ -92,7 +92,7 @@ void loop()
         Serial.println("Radio is available");
         //radio.read(t_message &bericht, sizeof(t_message));
         getMessage(bericht);
-        char in = bericht.verzenderUID; //Make a local char called "in"
+        uint8_t in = bericht.verzenderUID; //Make a local char called "in"
         //Now it knows which controller has won.
 
         lcd.setCursor(0,0);
@@ -106,6 +106,15 @@ void loop()
           radio.stopListening(); //start writing
           bericht.command = 'T'; //command 1 tells the cons that game 1 starts //write 'T' to con1. It knows it has won and will execute his code.
           bericht.ontvangerUID = 1;
+          sendMessage(bericht);
+          //radio.write(t_message &bericht, sizeof(t_message));
+          radio.startListening();
+        }
+        if (in == '2') //Winner con2? '2' means that controller 2 has won.
+        {
+          radio.stopListening(); //start writing
+          bericht.command = 'T'; //command 1 tells the cons that game 1 starts //write 'T' to con1. It knows it has won and will execute his code.
+          bericht.ontvangerUID = 2;
           sendMessage(bericht);
           //radio.write(t_message &bericht, sizeof(t_message));
           radio.startListening();
