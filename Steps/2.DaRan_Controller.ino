@@ -30,15 +30,15 @@ RF24 radio(9, 8);  // CE, CSN. This is for connecting the CE and the CSN pins of
 // ----- Declare Global Variables -----
 int buzz = 7; //Buzzer
 int vibr = 5; //Vibration motor
-bool isGedrukt = LOW; //For making sure the controller can only press once.
+bool isGedrukt = false; //For making sure the controller can only press once.
 
 struct t_message
 {
   uint8_t alleCons;
+  uint8_t verzenderUID;
   uint8_t ontvangerUID;
   char command;
-}
-bericht; //Var voor het bericht Bericht.verzenderUID =
+} bericht; //Var voor het bericht bericht.verzenderUID =
 
 
 // Setup
@@ -58,8 +58,8 @@ void setup()
   radio.setPayloadSize(sizeof(t_message));
   radio.setPALevel(RF24_PA_LOW);
 
-  radio.openWritingPipe(adresHub); //Schrijf altijd naar de controllers
-  radio.openReadingPipe(1, adresCon);
+  radio.openWritingPipe(adresHub); //Schrijf altijd naar de Hub
+  radio.openReadingPipe(1, adresCon); //Luister altijd naar het adres van de controllers
   radio.startListening(); //Start listening to signals.
 }
 
@@ -70,9 +70,9 @@ void loop()
   if (radio.available()) //If something is received. This is to know which game is being started.
   {
     Serial.println("Radio.available");
-    char text;
-    radio.read(&text, sizeof(text)); //Make an character named text. Put "1" in this char.
-    Serial.println(text);
+    //radio.read(t_message &bericht, sizeof(t_message));
+    getMessage(bericht);
+    char text = bericht.command;
     radio.startListening(); //Start listening  to incoming signals.
 
     if (text == '1')//Is the incoming text '1'? Start game 1.
@@ -83,50 +83,56 @@ void loop()
       while (end == false) //While the end is false this while will be active.
       {
         //Serial.println("Wacht op signaal");
-        if (digitalRead(knop) == LOW && isGedrukt == LOW) //If the button is pressed and the button has not yes been pressed. This way there can only be pressed ones a game.
+        if (digitalRead(knop) == LOW && isGedrukt == false) //If the button is pressed and the button has not yes been pressed. This way there can only be pressed ones a game.
         {
-          char uit = '1'; //Make an character named uit. Put '1' in this char. This means controller 1 to the hub.
           Serial.println("Knop gedrukt"); //Show that the button has been pressed. It always gets here.
           radio.stopListening(); //Start stending.
 
-          if (radio.write(&uit, sizeof(uit))) {
-            Serial.print(F("UIT:")); Serial.println(uit);
-          } else {
-            Serial.println(F("UIT: verzendfout"));
-          }
-          //radio.write(&uit, sizeof(uit)); //Send the data that has been stored in the char uit.
-          isGedrukt = HIGH; //isGedrukt has been put on high. This will allow to not constantly press the button. No cheating ;)
+          bericht.verzenderUID = 1;
+          bericht.command = '1';
+          sendMessage(bericht);
+          //radio.write(t_message &bericht, sizeof(t_message));
+
+          isGedrukt = true; //isGedrukt has been put on high. This will allow to not constantly press the button. No cheating ;)
           radio.startListening(); //Start listening.
         }
 
         if (radio.available()) //If a  signal has been found.
         {
-          char in; //Make an character named in.
-          radio.read(&in, sizeof(in)); //Store the incoming char in "in".
           Serial.println("Signaal binnen"); //Show that a signal has been found.
-          if (in == '4') //If the incoming message is '4' it means the game has been ended.
+          //radio.read(t_message &bericht, sizeof(t_message));
+          getMessage(bericht);
+          char in = bericht.command;
+          if (bericht.alleCons == 1) //gaat het bericht naar alle controllers?
           {
-            Serial.println("Signaal 4 is binnen");
-            digitalWrite(vibr, LOW);
-            noTone(buzz);
-            end = true; //make the bool end true. The code will leave the while.
+            if (in == '4') //If the incoming message is '4' it means the game has been ended.
+            {
+              Serial.println("Signaal 4 is binnen");
+              digitalWrite(vibr, LOW);
+              noTone(buzz);
+              end = true; //make the bool end true. The code will leave the while.
+            }
           }
-          else if (in == 'F') //If the incoming message is 'F' it means you have pressed to fast.
+          if (bericht.ontvangerUID == 1 && bericht.alleCons == 0) //Gaat het bericht naar een speciafieke con?
           {
-            tone(buzz, 1000); //normaal laten trillen
-            digitalWrite(vibr, HIGH);
-            delay(1000);
-            noTone(buzz);
-            digitalWrite(vibr, LOW);
-          }
-          else if (in == 'T')//If the incoming message is 'T' it means you are the winner.
-          {
-            tone(buzz, 1000);
-            digitalWrite(vibr, HIGH);
+            if (in == 'F') //If the incoming message is 'F' it means you have pressed to fast.
+            {
+              tone(buzz, 1000); //normaal laten trillen
+              digitalWrite(vibr, HIGH);
+              delay(1000);
+              noTone(buzz);
+              digitalWrite(vibr, LOW);
+            }
+            else if (in == 'T')//If the incoming message is 'T' it means you are the winner.
+            {
+              tone(buzz, 1000);
+              digitalWrite(vibr, HIGH);
+            }
           }
         }
       }
-      isGedrukt = LOW; //The next game the button will be able to be pressed again. Its a reset.
+      //while(digitalRead(knop) == LOW);
+      isGedrukt = false; //The next game the button will be able to be pressed again. Its a reset.
     }
 
     else if (text == '2') //Start game 2 Not important now.
@@ -152,10 +158,10 @@ void loop()
           const char in[] = "1"; //maak een array met karakters genaamd in. Stop hierin "1".
           radio.write(&in, sizeof(in)); //data die in 'in' staat wordt verstuurd.
           radio.startListening();
-          isGedrukt = HIGH;
+          isGedrukt = true;
         }
       }
-      isGedrukt = LOW;
+      isGedrukt = false;
       noTone(buzz);
     }
 
@@ -167,4 +173,14 @@ void loop()
     ///delay(1000); //For testing purposes.
     noTone(buzz); //Make sure the buzzer is out.
   }
+}
+
+void sendMessage(t_message &msg)
+{
+  radio.write(&msg, sizeof(t_message));
+}
+
+bool getMessage(t_message &msg)
+{
+  radio.read(&msg, sizeof(t_message));
 }

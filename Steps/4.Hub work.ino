@@ -92,7 +92,8 @@ void loop()
         Serial.println("Radio is available");
         //radio.read(t_message &bericht, sizeof(t_message));
         getMessage(bericht);
-        uint8_t in = bericht.verzenderUID; //Make a local char called "in"
+        //char inkomend = bericht.verzenderUID; //Make a local char called "in"
+        //Serial.println(in);
         //Now it knows which controller has won.
 
         lcd.setCursor(0,0);
@@ -100,25 +101,24 @@ void loop()
         lcd.setCursor(0,2);
         lcd.print("   Player:");
         lcd.setCursor(11,2);
-        lcd.print(in); //Show on the LCD who has won.
-        if (in == 1) //Winner con1? '1' means that controller 1 has won.
+        lcd.print(bericht.verzenderUID); //Show on the LCD who has won.
+        /*if (bericht.command == '1') //Winner con1? '1' means that controller 1 has won.
         {
+          Serial.println("Verzenden naar 1");
           radio.stopListening(); //start writing
           bericht.command = 'T'; //command 1 tells the cons that game 1 starts //write 'T' to con1. It knows it has won and will execute his code.
           bericht.ontvangerUID = 1;
           sendMessage(bericht);
           //radio.write(t_message &bericht, sizeof(t_message));
           radio.startListening();
-        }
-        if (in == 2) //Winner con2? '2' means that controller 2 has won.
-        {
-          radio.stopListening(); //start writing
-          bericht.command = 'T'; //command 1 tells the cons that game 1 starts //write 'T' to con1. It knows it has won and will execute his code.
-          bericht.ontvangerUID = 2;
-          sendMessage(bericht);
-          //radio.write(t_message &bericht, sizeof(t_message));
-          radio.startListening();
-        }
+        }*/
+
+        radio.stopListening();
+        bericht.command = 'T'; //command 1 tells the cons that game 1 starts //write 'T' to con1. It knows it has won and will execute his code.
+        bericht.ontvangerUID = bericht.verzenderUID;
+        sendMessage(bericht);
+        //radio.startListening();
+
         delay(4000); //Show for 4 seconds who has won.
         tijdTimer = 0; //make tijdTimer 0. Now it will go out of the while.
       }
