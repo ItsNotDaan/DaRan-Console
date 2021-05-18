@@ -66,7 +66,6 @@ void setup()
 // Main loop
 void loop()
 {
-
   if (radio.available()) //If something is received. This is to know which game is being started.
   {
     Serial.println("Radio.available");
@@ -147,10 +146,13 @@ void loop()
       unsigned long huidigeTijd = millis(); //tijd hoelang het programma al draait. Long omdat het om tijd gaat
       while (millis() - huidigeTijd < tijdTimer) //doe 10 seconden alles wat in de while staat.
       {
+        /*
         if (millis() - huidigeTijd > 8000) //nog 2 seconden om jezelf toe te voegen
         {
             digitalWrite(led, HIGH);
         }
+        */
+
         if (digitalRead(knop) == HIGH && isGedrukt == false) //Als de knop wordt geklikt.
         {
           bericht.verzenderUID = 1;
@@ -198,7 +200,7 @@ void loop()
             unsigned long huidigeTijd = millis(); //tijd hoelang het programma al draait. Long omdat het om tijd gaat
             while (millis() - huidigeTijd < tijdTimer) //Na 5 seconden klikt die automatisch.
             {
-              if (bericht.ontvangen == 1) //Heeft deze controller gewonnen?
+              if (bericht.ontvangerUID == 1) //Heeft deze controller gewonnen?
               {
                 digitalWrite(led, HIGH);
               }
