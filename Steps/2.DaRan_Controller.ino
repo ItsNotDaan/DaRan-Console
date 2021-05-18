@@ -77,7 +77,7 @@ void loop()
     if (text == '1')//Is the incoming text '1'? Start game 1.
     {
       Serial.println("Game 1");
-      digitalWrite(led, HIGH);
+      //digitalWrite(led, HIGH);
 
       bool end = false;
       while (end == false) //While the end is false this while will be active.
@@ -106,7 +106,12 @@ void loop()
           {
             if (in == '4') //If the incoming message is '4' it means the game has been ended.
             {
+              if (bericht.ontvangerUID == 1) //Controller gewonnen?
+              {
+                digitalWrite(led, HIGH);
+              }
               Serial.println("Signaal 4 is binnen");
+              delay(4000); //4 seconden wachten
               digitalWrite(led, LOW);
               noTone(buzz);
               end = true; //make the bool end true. The code will leave the while.
@@ -117,8 +122,10 @@ void loop()
             if (in == 'F') //If the incoming message is 'F' it means you have pressed to fast.
             {
               tone(buzz, 1000); //normaal laten trillen
+              //digitalWrite(led, LOW);
               //digitalWrite(vibr, HIGH);
               delay(1000);
+              //digitalWrite(led, LOW);
               noTone(buzz);
               //digitalWrite(vibr, LOW);
             }
@@ -147,12 +154,13 @@ void loop()
       unsigned long huidigeTijd = millis(); //tijd hoelang het programma al draait. Long omdat het om tijd gaat
       while (millis() - huidigeTijd < tijdTimer) //doe 10 seconden alles wat in de while staat.
       {
-        if (millis() - huidigeTijd > 8000) //nog 2 seconden om jezelf toe te voegen
+        /*if (millis() - huidigeTijd > 8000) //nog 2 seconden om jezelf toe te voegen
         {
             digitalWrite(led, HIGH);
-        }
-        if (digitalRead(knop) == HIGH && isGedrukt == false) //Als de knop wordt geklikt.
+        }*/
+        if (digitalRead(knop) == LOW && isGedrukt == false) //Als de knop wordt geklikt.
         {
+          Serial.println("Knop gedrukt");
           bericht.verzenderUID = 1;
           stuurBericht(bericht);
           isGedrukt = true;
@@ -167,17 +175,20 @@ void loop()
       {
         if (radio.available()) //Is er een signaal binnen?
         {
+          Serial.println("Komt er data binnen?");
           leesBericht(bericht);
-          if (bericht.ontvangerUID == 1) //Is het signaal voor deze controller?
+          if (bericht.ontvangerUID == 1 && bericht.alleCons == 0) //Is het signaal voor deze controller?
           {
-            digitalWrite(led, HIGH) //Led zodat controller weet dat die mag.
+            Serial.println("Controller moet gooien");
+            digitalWrite(led, HIGH); //Led zodat controller weet dat die mag.
             bool gedrukt = false;
             long tijdTimer = 5000; //5 seconden wachten.
             unsigned long huidigeTijd = millis(); //tijd hoelang het programma al draait. Long omdat het om tijd gaat
             while (millis() - huidigeTijd < tijdTimer) //Na 5 seconden klikt die automatisch.
             {
-              if (digitalRead(knop) == HIGH && isGedrukt == false) //Knop kan gedrukt worden.
+              if (digitalRead(knop) == LOW && isGedrukt == false) //Knop kan gedrukt worden.
               {
+                Serial.println("Controller gooit");
                 bericht.verzenderUID = 1;
                 stuurBericht(bericht);
                 isGedrukt = true;
@@ -186,6 +197,7 @@ void loop()
             }
             if (gedrukt == false) //Knop nog niet gedrukt na 5 seconden?
             {
+              Serial.println("Controller heeft niet gedrukt in 5 seconden");
               bericht.verzenderUID = 1;
               stuurBericht(bericht);
             }
@@ -194,12 +206,14 @@ void loop()
 
           if (bericht.alleCons == 1) //Einde van het spel.
           {
+            Serial.println("Alle controllers krijgen een bericht");
             long tijdTimer = 5000; //5 seconden wachten.
             unsigned long huidigeTijd = millis(); //tijd hoelang het programma al draait. Long omdat het om tijd gaat
             while (millis() - huidigeTijd < tijdTimer) //Na 5 seconden klikt die automatisch.
             {
-              if (bericht.ontvangen == 1) //Heeft deze controller gewonnen?
+              if (bericht.ontvangerUID == 1) //Heeft deze controller gewonnen?
               {
+                Serial.println("Alle controllers krijgen een bericht");
                 digitalWrite(led, HIGH);
               }
             }
