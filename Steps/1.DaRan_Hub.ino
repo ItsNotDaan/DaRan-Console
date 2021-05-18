@@ -347,7 +347,7 @@ void menu()
            leesBericht(bericht); //Lees het inkomende bericht
            aangemeld[e] = bericht.verzenderUID; //Elke keer als er iets binnenkomt dan wordt de waarde van de controller in de aangemelde array gegooid.
            e++;
-
+           lcd.clear();
            lcd.setCursor(0,0);
            lcd.print("  Player: ");
            lcd.setCursor(11,0);
@@ -376,11 +376,14 @@ void menu()
         {
           for (int a = 0; a < spelers; a++) //loop van 0 tot het aantal mensen dat heeft gedrukt.
           {
+            lcd.clear();
             lcd.setCursor(0,0);
             lcd.print("Controller: ");
             lcd.print(aangemeld[a]);
             lcd.setCursor(0,2);
             lcd.print("can throw");
+            bericht.ontvangerUID = aangemeld[a]; //Geef door aan de controller dat die mag gooien
+            stuurBericht(bericht); //Verstuur het bericht.
 
             bool klik = false;
             while (klik == false) //klik false?
@@ -445,6 +448,11 @@ void menu()
         lcd.print(" With   Points ");
         lcd.setCursor(6,2);
         lcd.print(points[winner]);
+
+        bericht.ontvangerUID = pointName[winner]; //de Winnaar wordt gestopt in ontvangerUID.
+        bericht.alleCons = 1; //Alle controllers moeten dit commando aannemen.
+        stuurBericht(bericht); //Verstuur het bericht.
+        bericht.alleCons = 0; //Zet alle controllers uit.
 
         delay(5000);
         aantalDrukken = 1; //terug naar start Menu

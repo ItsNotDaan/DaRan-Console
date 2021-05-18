@@ -137,33 +137,77 @@ void loop()
 
     else if (text == '2') //Start game 2 Not important now.
     {
-      Serial.println("text = 1");
+      Serial.println("Game 2 starts");
       //(11 - 10 = 1) < 10000 =  true
       //(12 - 10 = 2) < 10000 = true
       //.....
       //(10010 - 10 = 10000) =< 10000 = true
       //(10011 - 10 = 10001) =< 10000 = false dus doorgaan.
-
-      unsigned long tijdTimer = 10000; //10 seconden wachten.
+      long tijdTimer = 10000; //10 seconden wachten.
       unsigned long huidigeTijd = millis(); //tijd hoelang het programma al draait. Long omdat het om tijd gaat
       while (millis() - huidigeTijd < tijdTimer) //doe 10 seconden alles wat in de while staat.
       {
-        if (millis() - huidigeTijd > 8000)
+        if (millis() - huidigeTijd > 8000) //nog 2 seconden om jezelf toe te voegen
         {
-            tone(buzz, 2000);
+            digitalWrite(led, HIGH);
         }
-        if (digitalRead(knop) == HIGH && isGedrukt == LOW) //Als de knop wordt geklikt.
+        if (digitalRead(knop) == HIGH && isGedrukt == false) //Als de knop wordt geklikt.
         {
           bericht.verzenderUID = 1;
           sendMessage(bericht);
-
-          const char in[] = "1"; //maak een array met karakters genaamd in. Stop hierin "1".
-          radio.write(&in, sizeof(in)); //data die in 'in' staat wordt verstuurd.
           isGedrukt = true;
         }
       }
+      digitalWrite(led, LOW);
       isGedrukt = false;
       noTone(buzz);
+
+      bool eind = false;
+      while (eind == false) //Doe je mee?
+      {
+        if (radio.available()) //Is er een signaal binnen?
+        {
+          leesBericht(bericht);
+          if (bericht.ontvangerUID == 1) //Is het signaal voor deze controller?
+          {
+            digitalWrite(led, HIGH) //Led zodat controller weet dat die mag.
+            bool gedrukt = false;
+            long tijdTimer = 5000; //5 seconden wachten.
+            unsigned long huidigeTijd = millis(); //tijd hoelang het programma al draait. Long omdat het om tijd gaat
+            while (millis() - huidigeTijd < tijdTimer) //Na 5 seconden klikt die automatisch.
+            {
+              if (digitalRead(knop) == HIGH && isGedrukt == false) //Knop kan gedrukt worden.
+              {
+                bericht.verzenderUID = 1;
+                sendMessage(bericht);
+                isGedrukt = true;
+                gedrukt = true;
+              }
+            }
+            if (gedrukt == false) //Knop nog niet gedrukt na 5 seconden?
+            {
+              bericht.verzenderUID = 1;
+              sendMessage(bericht);
+            }
+            digitalWrite(led, LOW); //ledje uit want controller hoeft niet meer te gooien.
+          }
+
+          if (bericht.alleCons == 1) //Einde van het spel.
+          {
+            long tijdTimer = 5000; //5 seconden wachten.
+            unsigned long huidigeTijd = millis(); //tijd hoelang het programma al draait. Long omdat het om tijd gaat
+            while (millis() - huidigeTijd < tijdTimer) //Na 5 seconden klikt die automatisch.
+            {
+              if (bericht.ontvangen == 1) //Heeft deze controller gewonnen?
+              {
+                digitalWrite(led, HIGH);
+              }
+            }
+            digitalWrite(led, LOW);
+            eind = true; //Stop het spel en ga terug naar het begin.
+          }
+        }
+      }
     }
 
     else if (text == '3')
