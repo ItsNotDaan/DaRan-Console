@@ -66,6 +66,7 @@ void setup()
 // Main loop
 void loop()
 {
+
   if (radio.available()) //If something is received. This is to know which game is being started.
   {
     Serial.println("Radio.available");
