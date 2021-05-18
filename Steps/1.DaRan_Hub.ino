@@ -330,6 +330,12 @@ void menu()
         stuurBericht(bericht); //Verstuur het bericht.
         bericht.alleCons = 0; //Zet alle controllers uit.
 
+        lcd.clear();
+        lcd.setCursor(0,0);
+        lcd.print("  Press to add  ");
+        lcd.setCursor(0,2);
+        lcd.print("your controller ");
+
         //(11 - 10 = 1) < 10000 =  true
         //(12 - 10 = 2) < 10000 = true
         //.....
@@ -344,6 +350,7 @@ void menu()
         {
          if (radio.available()) //als er iets binnenkomt.
          {
+           Serial.print("Bericht binnen");
            leesBericht(bericht); //Lees het inkomende bericht
            aangemeld[e] = bericht.verzenderUID; //Elke keer als er iets binnenkomt dan wordt de waarde van de controller in de aangemelde array gegooid.
            e++;
@@ -354,18 +361,25 @@ void menu()
            lcd.print(bericht.verzenderUID);
            lcd.setCursor(0,2);
            lcd.print("     Added    ");
+
+           delay(500);
+
+           lcd.setCursor(0,0);
+           lcd.print("  Press to add  ");
+           lcd.setCursor(0,2);
+           lcd.print("your controller ");
            //Doordat er bij de controller maar 1 keer gedrukt kan worden staat alles erin.
          }
         }
 
-        int spelers = 0;
-        for (int i = 0; i < sizeof(aangemeld); i++) //Kan het variable van e ook gebruikt worden??
+        int spelers = e;
+        /*for (int i = 0; i < sizeof(aangemeld); i++) //Kan het variable van e ook gebruikt worden??
         {
           if (aangemeld[i] != 0)
           {
              spelers++;
           }
-        }
+        }*/
 
         Serial.println(e); //testen
         Serial.println(spelers); //testen
@@ -378,7 +392,8 @@ void menu()
           {
             lcd.clear();
             lcd.setCursor(0,0);
-            lcd.print("Controller: ");
+            lcd.print(" Controller: ");
+            lcd.setCursor(14,0);
             lcd.print(aangemeld[a]);
             lcd.setCursor(0,2);
             lcd.print("can throw");
