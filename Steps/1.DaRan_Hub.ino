@@ -26,10 +26,8 @@
 #define led 6
 
 //Dit is het adressen waar naar verzonden/ontvangen wordt.
-const byte Rcon1[6] = "10000"; //Controller 1 dat wordt gelezen.
-const byte Rcon2[6] = "20000"; //Controller 2 dat wordt gelezen.
-const byte con1[6] = "10001"; //Adres van controller 1 voor het verzenden.
-const byte con2[6] = "20001"; //Adres van controller 2 voor het verzenden.
+uint8_t adresHub[] = {0x00, 0xCE, 0xCC, 0xCE, 0xCC}; //Het adres voor de Hub
+uint8_t adresCon[] = {0x01, 0xCE, 0xCC, 0xCE, 0xCC}; //Het adres voor alle controllers
 
 // ----- Declare Objects -----
 LiquidCrystal_I2C lcd(0x27, 2, 1, 0, 4, 5, 6, 7, 3, POSITIVE); //voor lcd
@@ -51,6 +49,14 @@ String light;
 int LDR = A0;
 int PT100 = A1;
 
+struct t_message
+{
+  uint8_t alleCons;
+  uint8_t verzenderUID;
+  uint8_t ontvangerUID;
+  char command;
+} bericht; //Var voor het bericht bericht.verzenderUID =
+
 // Setup
 void setup()
 {
@@ -61,13 +67,21 @@ void setup()
   pinMode(PT100, INPUT);
   pinMode(led, OUTPUT);
   Serial.begin(9600);
-  radio.begin(); //start de zender
-  radio.setPALevel(RF24_PA_LOW);     // Dicht bij elkaar? dan kan low.
 
-  radio.openReadingPipe(1, Rcon1); //adres dat ook in de constant werd aangegeven. Lezen
-  radio.openReadingPipe(2, Rcon2); //adres dat ook in de constant werd aangegeven. Lezen
+  radio.begin(); //Init the transceiver
+
+  Serial.print("Radio aangesloten : ");
+  Serial.println(radio.isChipConnected() ? "JA" : "NEE");
+
+  radio.setPayloadSize(sizeof(t_message));
+  radio.setPALevel(RF24_PA_LOW);
+
+  radio.openWritingPipe(adresCon); //Schrijf altijd naar de controllers
+  radio.openReadingPipe(1, adresHub); //Luister altijd naar de controllers
+  radio.startListening(); //Start listening to signals.
 
   radio.startListening();
+
   lcd.begin(16,2);
   lcd.home();
 
@@ -192,15 +206,10 @@ void menu()
         lcd.setCursor(0,2);
         lcd.print("     Active     ");
 
-        radio.stopListening(); //door te stoppen met luisteren wordt het een zender.
-        char text = '1'; //maak een array met karakters genaamd text. Stop hierin "1".
-
-        radio.openWritingPipe(con2);
-        radio.write(&text, sizeof(text)); //verstuur de data in de text.
-
-        radio.openWritingPipe(con1);
-        radio.write(&text, sizeof(text)); //verstuur de data in de text.
-        radio.startListening();
+        bericht.command = '1'; //command 1 tells the cons that game 1 starts.
+        bericht.alleCons = 1; //Alle controllers moeten dit commando aannemen.
+        stuurBericht(bericht); //Verstuur het bericht.
+        bericht.alleCons = 0; //Zet alle controllers uit.
 
         lcd.clear();
         //16x16 dot display = "3"
@@ -228,34 +237,20 @@ void menu()
         //(10011 - 10 = 10001) =< 10000 = false dus doorgaan.
         //unsigned long tijdTimer = random(5000, 20000); //random tijd tussen de 5 en 20 seconden
         long tijdTimer = 5000; //for testing
-        long huidigeTijd = millis(); //tijd hoelang het programma al draait. Long omdat het om tijd gaat
+        unsigned long huidigeTijd = millis(); //tijd hoelang het programma al draait. Long omdat het om tijd gaat
         while (millis() - huidigeTijd < tijdTimer) //doe voor het aantal seconden alles wat in de while staat.
         {
-          //Serial.write("Tijd 1");
           if (radio.available()) //als er iets binnenkomt.
           {
-            char in;
-            radio.read(&in, sizeof(in)); //alles dat wordt ingelezen wordt opgeslagen in de char in.
+            leesBericht(bericht);
+            Serial.println(bericht.verzenderUID);
+            Serial.print("heeft te snel gedrukt");
 
-            if (in == '1')
-            {
-              radio.stopListening(); //door te stoppen met luisteren wordt het een zender.
-              radio.openWritingPipe(con1);
-              char text = 'F'; //maak een array met karakters genaamd text. Stop hierin "1".
-              radio.write(&text, sizeof(text)); //verstuur de data in de text.
-              radio.startListening();
-            }
-            else if (in == '2')
-            {
-              radio.stopListening(); //door te stoppen met luisteren wordt het een zender.
-              radio.openWritingPipe(con2);
-              char text = 'F'; //maak een array met karakters genaamd text. Stop hierin "1".
-              radio.write(&text, sizeof(text)); //verstuur de data in de text.
-              radio.startListening();
-            }
+            bericht.command = 'F'; //F is van verloren
+            bericht.ontvangerUID = bericht.verzenderUID;
+            stuurBericht(bericht);
           }
         }
-        //radio.startListening();
 
         lcd.setCursor(0,0);
         lcd.print("CLICK THE BUTTON");
@@ -266,49 +261,41 @@ void menu()
         huidigeTijd = millis(); //tijd hoelang het programma al draait.
         while (millis() - huidigeTijd < tijdTimer) //doe voor het aantal seconden alles wat in de while staat.
         {
-          //Serial.write("Tijd 2");
-        //animatie dat timer over is
+          //animatie dat timer over is
           if(radio.available())
           {
-            Serial.println("Radio is avaiable");
-            char in;
-            radio.read(&in, sizeof(in)); //alles dat wordt ingelezen wordt opgeslagen in de char in.
+            Serial.println("Winnaar is binnen");
+
+            leesBericht(bericht);
 
             lcd.setCursor(0,0);
             lcd.print(" The winner is: ");
             lcd.setCursor(0,2);
             lcd.print("   Player:");
             lcd.setCursor(11,2);
-            lcd.print(in[0]);
-            char win = 'T'; //maak een array met karakters genaamd text. Stop hierin "T" van tone.
-            if (in == '1') //Winnaar con1?
-            {
-              radio.stopListening(); //door te stoppen met luisteren wordt het een zender.
-              radio.openWritingPipe(con1);
-              radio.write(&win, sizeof(win)); //verstuur de data in de text.
-              radio.startListening();
-            }
-            else if (in == '2')//Winnaar con2?
-            {
-              radio.stopListening(); //door te stoppen met luisteren wordt het een zender.
-              radio.openWritingPipe(con2);
-              radio.write(&win, sizeof(win)); //verstuur de data in de text.
-              radio.startListening();
-            }
+            lcd.print(bericht.verzenderUID); //Show on the LCD who has won.
 
-            delay(4000);
+            bericht.ontvangerUID = bericht.verzenderUID;
+
+            //**************************************************
+            //Het terugsturen geeft een bug. Voor nu overslaan.
+            /*
+            bericht.command = 'T'; //T is een win.
+            bericht.ontvangerUID = bericht.verzenderUID;
+            sendMessage(bericht); //Hier zit de fout
+            */
+            //**************************************************
+
+           // delay(4000);
             tijdTimer = 0; //Stop de timer
           }
         }
 
-        radio.stopListening(); //door te stoppen met luisteren wordt het een zender.
-        char eind = '4'; //maak een array met karakters genaamd text. Stop hierin "4".
-        radio.openWritingPipe(con1);
-        radio.write(&eind, sizeof(eind)); //verstuur de data in de text.
-
-        radio.openWritingPipe(con2);
-        radio.write(&eind, sizeof(eind)); //verstuur de data in de text.
-        radio.startListening();
+        bericht.command = '4'; //Put "4" in this char. //This will be send to all the controllers. They know they can go back to the beginning.
+        bericht.alleCons = 1;
+        stuurBericht(bericht);
+        bericht.alleCons = 0;
+        delay(4000);
 
         aantalDrukken = 1; //terug naar start Menu
         activeren = LOW;
@@ -341,59 +328,64 @@ void menu()
         lcd.setCursor(0,2);
         lcd.print("     Active     ");
 
-        radio.stopListening(); //door te stoppen met luisteren wordt het een zender.
+        bericht.command = '2'; //command 1 tells the cons that game 1 starts.
+        bericht.alleCons = 1; //Alle controllers moeten dit commando aannemen.
+        stuurBericht(bericht); //Verstuur het bericht.
+        bericht.alleCons = 0; //Zet alle controllers uit.
 
-        char text = '2'; //maak een array met karakters genaamd text. Stop hierin "1".
-        radio.openWritingPipe(con2);
-        radio.write(&text, sizeof(text)); //verstuur de data in de text.
-
-        radio.openWritingPipe(con1);
-        radio.write(&text, sizeof(text)); //verstuur de data in de text.
-        radio.startListening();
+        lcd.clear();
+        lcd.setCursor(0,0);
+        lcd.print("  Press to add  ");
+        lcd.setCursor(0,2);
+        lcd.print("your controller ");
 
         //(11 - 10 = 1) < 10000 =  true
         //(12 - 10 = 2) < 10000 = true
         //.....
         //(10010 - 10 = 10000) =< 10000 = true
         //(10011 - 10 = 10001) =< 10000 = false dus doorgaan.
-        char aangemeld[4]; //een array met 4 plekjes
+        int aangemeld[4]; //een array met 4 plekjes
         int e = 0; //Voor het bijvoegen van dingen in het array
         unsigned char adr;
-        unsigned long tijdTimer = 10000; //10 seconden wachten.
+        long tijdTimer = 10000; //10 seconden wachten.
         unsigned long huidigeTijd = millis(); //tijd hoelang het programma al draait. Long omdat het om tijd gaat
-        while (millis() - huidigeTijd < tijdTimer) //doe 10 seconden alles wat in de while staat.
+        while (millis() - huidigeTijd < tijdTimer) //doe 10 seconden lang mensen toevoegen die mee willen doen.
         {
          if (radio.available()) //als er iets binnenkomt.
          {
-           char in;
-           radio.read(&in, sizeof(in)); //alles dat wordt ingelezen wordt opgeslagen in de char in.
-           //Serial.println(in);
-           aangemeld[e] = in; //Elke keer als er iets binnenkomt dan wordt de waarde van de controller in de aangemelde array gegooid.
+           Serial.print("Bericht binnen");
+           leesBericht(bericht); //Lees het inkomende bericht
+           aangemeld[e] = bericht.verzenderUID; //Elke keer als er iets binnenkomt dan wordt de waarde van de controller in de aangemelde array gegooid.
            e++;
+           lcd.clear();
+           lcd.setCursor(0,0);
+           lcd.print("  Player: ");
+           lcd.setCursor(11,0);
+           lcd.print(bericht.verzenderUID);
+           lcd.setCursor(0,2);
+           lcd.print("     Added    ");
+
+           delay(500);
+
+           lcd.setCursor(0,0);
+           lcd.print("  Press to add  ");
+           lcd.setCursor(0,2);
+           lcd.print("your controller ");
            //Doordat er bij de controller maar 1 keer gedrukt kan worden staat alles erin.
-           if (in == '1')
-           {
-             Serial.println("Dit is controller 1");
-           }
-           else if (in == '2')
-           {
-             Serial.println("Dit is controller 2");
-           }
-           else {
-             Serial.println("controller niet gevonden");
-           }
          }
         }
-        int spelers = 0;
-        for (int i = 0; i < sizeof(aangemeld); i++) //Kan het variable van e ook gebruikt worden??
+
+        int spelers = e;
+        /*for (int i = 0; i < sizeof(aangemeld); i++) //Kan het variable van e ook gebruikt worden??
         {
           if (aangemeld[i] != 0)
           {
              spelers++;
           }
-        }
-        Serial.println(e);
-        Serial.println(spelers);
+        }*/
+
+        Serial.println(e); //testen
+        Serial.println(spelers); //testen
         int rondes;
         int points[4] = {};
         char pointName[4] = {};
@@ -401,11 +393,15 @@ void menu()
         {
           for (int a = 0; a < spelers; a++) //loop van 0 tot het aantal mensen dat heeft gedrukt.
           {
+            lcd.clear();
             lcd.setCursor(0,0);
-            lcd.print("Controller: ");
+            lcd.print(" Controller: ");
+            lcd.setCursor(14,0);
             lcd.print(aangemeld[a]);
             lcd.setCursor(0,2);
-            lcd.print("mag gooien");
+            lcd.print("can throw");
+            bericht.ontvangerUID = aangemeld[a]; //Geef door aan de controller dat die mag gooien
+            stuurBericht(bericht); //Verstuur het bericht.
 
             bool klik = false;
             while (klik == false) //klik false?
@@ -413,13 +409,12 @@ void menu()
               if (radio.available()) //signaal binnen?
               {
                 bool klaar = false;
-                char in2;
-                radio.read(&in2, sizeof(in2));
-                if (in2 == aangemeld[a]) //Zelfde als degene die als eerste mocht gooien?
+                leesBericht(bericht);
+                if (bericht.verzenderUID == aangemeld[a]) //Zelfde als degene die als eerste mocht gooien?
                 {
                   int gooi = random(1,6); //maak een getal tussen de 1 en 6.
                   points[a] = gooi; //De waarde van gooi in array points.
-                  pointName[a] = in2; //De controller naam van de gooier op dezelfde plek als de hoogste.
+                  pointName[a] = bericht.verzenderUID; //De controller naam van de gooier op dezelfde plek als de hoogste.
 
                   klik = true;
                 }
@@ -428,6 +423,7 @@ void menu()
           }
           rondes++; //Langs alle spelers gaan.
         }
+
         int aantal1, aantal2, aantal;
         aantal1 = max(points[0], points[1]); //Max van deze twee in aantal1;
         aantal2 = max(points[2], points[3]); //Max van deze twee in aantal2;
@@ -454,18 +450,34 @@ void menu()
         points[0,1,6,0]
         Controller 2 is de winnaar met 6 punten.
         */
-        Serial.print("Speler ");
+        Serial.println("Speler ");
         Serial.print(pointName[winner]);
         Serial.print("has won with: ");
         Serial.print(points[winner]);
         Serial.print("points\n");
 
-        delay(1000);
+        lcd.clear();
+        lcd.setCursor(0,0);
+        lcd.print("Controller   won");
+        lcd.setCursor(12,0);
+        lcd.print(pointName[winner]);
+
+        lcd.setCursor(0,2);
+        lcd.print(" With   Points ");
+        lcd.setCursor(6,2);
+        lcd.print(points[winner]);
+
+        bericht.ontvangerUID = pointName[winner]; //de Winnaar wordt gestopt in ontvangerUID.
+        bericht.alleCons = 1; //Alle controllers moeten dit commando aannemen.
+        stuurBericht(bericht); //Verstuur het bericht.
+        bericht.alleCons = 0; //Zet alle controllers uit.
+
+        delay(5000);
         aantalDrukken = 1; //terug naar start Menu
         lcd.clear();
         activeren = LOW;
        }
-      break;
+       break;
 
 /************************************************************************************************/
 
@@ -530,4 +542,16 @@ String lght()
     light = "Day";
   }
   return light;
+}
+
+void stuurBericht(t_message &msg)
+{
+  radio.stopListening();
+  radio.write(&msg, sizeof(t_message));
+  radio.startListening();
+}
+
+bool leesBericht(t_message &msg)
+{
+  radio.read(&msg, sizeof(t_message));
 }
