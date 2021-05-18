@@ -71,7 +71,7 @@ void loop()
   {
     Serial.println("Radio.available");
     //radio.read(t_message &bericht, sizeof(t_message));
-    getMessage(bericht);
+    leesBericht(bericht);
     char text = bericht.command;
 
     if (text == '1')//Is the incoming text '1'? Start game 1.
@@ -89,7 +89,7 @@ void loop()
 
           bericht.verzenderUID = 1;
           bericht.command = '1';
-          sendMessage(bericht);
+          stuurBericht(bericht);
           //radio.write(t_message &bericht, sizeof(t_message));
 
           isGedrukt = true; //isGedrukt has been put on high. This will allow to not constantly press the button. No cheating ;)
@@ -99,7 +99,7 @@ void loop()
         {
           Serial.println("Signaal binnen"); //Show that a signal has been found.
           //radio.read(t_message &bericht, sizeof(t_message));
-          getMessage(bericht);
+          leesBericht(bericht);
           char in = bericht.command;
           Serial.println(in);
           if (bericht.alleCons == 1) //gaat het bericht naar alle controllers?
@@ -154,7 +154,7 @@ void loop()
         if (digitalRead(knop) == HIGH && isGedrukt == false) //Als de knop wordt geklikt.
         {
           bericht.verzenderUID = 1;
-          sendMessage(bericht);
+          stuurBericht(bericht);
           isGedrukt = true;
         }
       }
@@ -179,7 +179,7 @@ void loop()
               if (digitalRead(knop) == HIGH && isGedrukt == false) //Knop kan gedrukt worden.
               {
                 bericht.verzenderUID = 1;
-                sendMessage(bericht);
+                stuurBericht(bericht);
                 isGedrukt = true;
                 gedrukt = true;
               }
@@ -187,7 +187,7 @@ void loop()
             if (gedrukt == false) //Knop nog niet gedrukt na 5 seconden?
             {
               bericht.verzenderUID = 1;
-              sendMessage(bericht);
+              stuurBericht(bericht);
             }
             digitalWrite(led, LOW); //ledje uit want controller hoeft niet meer te gooien.
           }
@@ -220,14 +220,14 @@ void loop()
   }
 }
 
-void sendMessage(t_message &msg)
+void stuurBericht(t_message &msg)
 {
-  radio.stopListening(); //door te stoppen met luisteren wordt het een zender
+  radio.stopListening();
   radio.write(&msg, sizeof(t_message));
   radio.startListening();
 }
 
-bool getMessage(t_message &msg)
+bool leesBericht(t_message &msg)
 {
   radio.read(&msg, sizeof(t_message));
 }
