@@ -29,7 +29,7 @@ RF24 radio(9, 8);  // CE, CSN. This is for connecting the CE and the CSN pins of
 
 // ----- Declare Global Variables -----
 int buzz = 7; //Buzzer
-int vibr = 5; //Vibration motor
+int led = 5; //Vibration motor
 bool isGedrukt = false; //For making sure the controller can only press once.
 
 struct t_message
@@ -45,7 +45,7 @@ struct t_message
 void setup()
 {
   pinMode(buzz, OUTPUT); //For when the controller has won.
-  pinMode(vibr, OUTPUT); //For when the controller has won.
+  pinMode(led, OUTPUT); //For when the controller has won.
   pinMode(knop, INPUT_PULLUP); //init the button.
 
   Serial.begin(9600);
@@ -73,11 +73,11 @@ void loop()
     //radio.read(t_message &bericht, sizeof(t_message));
     getMessage(bericht);
     char text = bericht.command;
-    radio.startListening(); //Start listening  to incoming signals.
 
     if (text == '1')//Is the incoming text '1'? Start game 1.
     {
       Serial.println("Game 1");
+      digitalWrite(led, HIGH);
 
       bool end = false;
       while (end == false) //While the end is false this while will be active.
@@ -86,7 +86,6 @@ void loop()
         if (digitalRead(knop) == LOW && isGedrukt == false) //If the button is pressed and the button has not yes been pressed. This way there can only be pressed ones a game.
         {
           Serial.println("Knop gedrukt"); //Show that the button has been pressed. It always gets here.
-          radio.stopListening(); //Start stending.
 
           bericht.verzenderUID = 1;
           bericht.command = '1';
@@ -94,7 +93,6 @@ void loop()
           //radio.write(t_message &bericht, sizeof(t_message));
 
           isGedrukt = true; //isGedrukt has been put on high. This will allow to not constantly press the button. No cheating ;)
-          radio.startListening(); //Start listening.
         }
 
         if (radio.available()) //If a  signal has been found.
@@ -103,12 +101,13 @@ void loop()
           //radio.read(t_message &bericht, sizeof(t_message));
           getMessage(bericht);
           char in = bericht.command;
+          Serial.println(in);
           if (bericht.alleCons == 1) //gaat het bericht naar alle controllers?
           {
             if (in == '4') //If the incoming message is '4' it means the game has been ended.
             {
               Serial.println("Signaal 4 is binnen");
-              digitalWrite(vibr, LOW);
+              digitalWrite(led, LOW);
               noTone(buzz);
               end = true; //make the bool end true. The code will leave the while.
             }
@@ -118,15 +117,16 @@ void loop()
             if (in == 'F') //If the incoming message is 'F' it means you have pressed to fast.
             {
               tone(buzz, 1000); //normaal laten trillen
-              digitalWrite(vibr, HIGH);
+              //digitalWrite(vibr, HIGH);
               delay(1000);
               noTone(buzz);
-              digitalWrite(vibr, LOW);
+              //digitalWrite(vibr, LOW);
             }
             else if (in == 'T')//If the incoming message is 'T' it means you are the winner.
             {
+              Serial.println("T is binnen");
               tone(buzz, 1000);
-              digitalWrite(vibr, HIGH);
+              //digitalWrite(vibr, HIGH);
             }
           }
         }
@@ -154,10 +154,11 @@ void loop()
         }
         if (digitalRead(knop) == HIGH && isGedrukt == LOW) //Als de knop wordt geklikt.
         {
-          radio.stopListening(); //door te stoppen met luisteren wordt het een zender
+          bericht.verzenderUID = 1;
+          sendMessage(bericht);
+
           const char in[] = "1"; //maak een array met karakters genaamd in. Stop hierin "1".
           radio.write(&in, sizeof(in)); //data die in 'in' staat wordt verstuurd.
-          radio.startListening();
           isGedrukt = true;
         }
       }
@@ -177,7 +178,9 @@ void loop()
 
 void sendMessage(t_message &msg)
 {
+  radio.stopListening(); //door te stoppen met luisteren wordt het een zender
   radio.write(&msg, sizeof(t_message));
+  radio.startListening();
 }
 
 bool getMessage(t_message &msg)
