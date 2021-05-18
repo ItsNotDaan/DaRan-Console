@@ -275,6 +275,8 @@ void menu()
             lcd.setCursor(11,2);
             lcd.print(bericht.verzenderUID); //Show on the LCD who has won.
 
+            bericht.ontvangerUID = bericht.verzenderUID;
+
             //**************************************************
             //Het terugsturen geeft een bug. Voor nu overslaan.
             /*
@@ -284,7 +286,7 @@ void menu()
             */
             //**************************************************
 
-            delay(4000);
+           // delay(4000);
             tijdTimer = 0; //Stop de timer
           }
         }
@@ -293,6 +295,7 @@ void menu()
         bericht.alleCons = 1;
         stuurBericht(bericht);
         bericht.alleCons = 0;
+        delay(4000);
 
         aantalDrukken = 1; //terug naar start Menu
         activeren = LOW;
