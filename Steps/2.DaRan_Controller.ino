@@ -31,6 +31,7 @@ RF24 radio(9, 8);  // CE, CSN. This is for connecting the CE and the CSN pins of
 int buzz = 7; //Buzzer
 int led = 5; //Vibration motor
 bool isGedrukt = false; //For making sure the controller can only press once.
+byte controllerNr = 2;
 
 struct t_message
 {
@@ -66,7 +67,6 @@ void setup()
 // Main loop
 void loop()
 {
-
   if (radio.available()) //If something is received. This is to know which game is being started.
   {
     Serial.println("Radio.available");
@@ -87,8 +87,7 @@ void loop()
         {
           Serial.println("Knop gedrukt"); //Show that the button has been pressed. It always gets here.
 
-          bericht.verzenderUID = 1;
-          bericht.command = '1';
+          bericht.verzenderUID = controllerNr;
           stuurBericht(bericht);
           //radio.write(t_message &bericht, sizeof(t_message));
 
@@ -106,7 +105,7 @@ void loop()
           {
             if (in == '4') //If the incoming message is '4' it means the game has been ended.
             {
-              if (bericht.ontvangerUID == 1) //Controller gewonnen?
+              if (bericht.ontvangerUID == controllerNr) //Controller gewonnen?
               {
                 digitalWrite(led, HIGH);
               }
@@ -117,23 +116,20 @@ void loop()
               end = true; //make the bool end true. The code will leave the while.
             }
           }
-          if (bericht.ontvangerUID == 1 && bericht.alleCons == 0) //Gaat het bericht naar een speciafieke con?
+          if (bericht.alleCons == 0) //Gaat het bericht naar een speciafieke con?
           {
             if (in == 'F') //If the incoming message is 'F' it means you have pressed to fast.
             {
-              tone(buzz, 1000); //normaal laten trillen
-              //digitalWrite(led, LOW);
-              //digitalWrite(vibr, HIGH);
-              delay(1000);
-              //digitalWrite(led, LOW);
-              noTone(buzz);
-              //digitalWrite(vibr, LOW);
-            }
-            else if (in == 'T')//If the incoming message is 'T' it means you are the winner.
-            {
-              Serial.println("T is binnen");
-              tone(buzz, 1000);
-              //digitalWrite(vibr, HIGH);
+              if (bericht.ontvangerUID == controllerNr)
+              {
+                tone(buzz, 1000); //normaal laten trillen
+                digitalWrite(led, HIGH);
+                //digitalWrite(vibr, HIGH);
+                delay(1000);
+                //digitalWrite(led, LOW);
+                noTone(buzz);
+                //digitalWrite(vibr, LOW);
+              }
             }
           }
         }
@@ -161,7 +157,7 @@ void loop()
         if (digitalRead(knop) == LOW && isGedrukt == false) //Als de knop wordt geklikt.
         {
           Serial.println("Knop gedrukt");
-          bericht.verzenderUID = 1;
+          bericht.verzenderUID = controllerNr;
           stuurBericht(bericht);
           isGedrukt = true;
         }
@@ -175,9 +171,12 @@ void loop()
       {
         if (radio.available()) //Is er een signaal binnen?
         {
-          Serial.println("Komt er data binnen?");
+          Serial.println("Data komt binnen");
           leesBericht(bericht);
-          if (bericht.ontvangerUID == 1 && bericht.alleCons == 0) //Is het signaal voor deze controller?
+          Serial.println(bericht.ontvangerUID);
+          Serial.println(bericht.alleCons);
+
+          if (bericht.ontvangerUID == controllerNr && bericht.alleCons == 0) //Is het signaal voor deze controller?
           {
             Serial.println("Controller moet gooien");
             digitalWrite(led, HIGH); //Led zodat controller weet dat die mag.
@@ -189,35 +188,35 @@ void loop()
               if (digitalRead(knop) == LOW && isGedrukt == false) //Knop kan gedrukt worden.
               {
                 Serial.println("Controller gooit");
-                bericht.verzenderUID = 1;
+                bericht.verzenderUID = controllerNr;
                 stuurBericht(bericht);
                 isGedrukt = true;
                 gedrukt = true;
+                tijdTimer = 0;
               }
             }
             if (gedrukt == false) //Knop nog niet gedrukt na 5 seconden?
             {
               Serial.println("Controller heeft niet gedrukt in 5 seconden");
-              bericht.verzenderUID = 1;
+              bericht.verzenderUID = controllerNr;
               stuurBericht(bericht);
             }
             digitalWrite(led, LOW); //ledje uit want controller hoeft niet meer te gooien.
           }
 
-          if (bericht.alleCons == 1) //Einde van het spel.
+          if (bericht.alleCons == 1 && bericht.command == '3') //Einde van het spel.
           {
             Serial.println("Alle controllers krijgen een bericht");
-            long tijdTimer = 5000; //5 seconden wachten.
-            unsigned long huidigeTijd = millis(); //tijd hoelang het programma al draait. Long omdat het om tijd gaat
-            while (millis() - huidigeTijd < tijdTimer) //Na 5 seconden klikt die automatisch.
+
+            if (bericht.ontvangerUID == controllerNr) //Heeft deze controller gewonnen?
             {
-              if (bericht.ontvangerUID == 1) //Heeft deze controller gewonnen?
-              {
-                Serial.println("Alle controllers krijgen een bericht");
-                digitalWrite(led, HIGH);
-              }
+              Serial.println("controller heeft gewonnen");
+              digitalWrite(led, HIGH);
             }
             digitalWrite(led, LOW);
+
+            delay(5000);
+            Serial.println("terug naar menu");
             eind = true; //Stop het spel en ga terug naar het begin.
           }
         }

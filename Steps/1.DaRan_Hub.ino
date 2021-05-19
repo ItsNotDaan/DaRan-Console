@@ -286,7 +286,7 @@ void menu()
             */
             //**************************************************
 
-           // delay(4000);
+            // delay(4000);
             tijdTimer = 0; //Stop de timer
           }
         }
@@ -329,9 +329,7 @@ void menu()
         lcd.print("     Active     ");
 
         bericht.command = '2'; //command 1 tells the cons that game 1 starts.
-        bericht.alleCons = 1; //Alle controllers moeten dit commando aannemen.
         stuurBericht(bericht); //Verstuur het bericht.
-        bericht.alleCons = 0; //Zet alle controllers uit.
 
         lcd.clear();
         lcd.setCursor(0,0);
@@ -399,8 +397,9 @@ void menu()
             lcd.setCursor(14,0);
             lcd.print(aangemeld[a]);
             lcd.setCursor(0,2);
-            lcd.print("can throw");
+            lcd.print("   can throw    ");
             bericht.ontvangerUID = aangemeld[a]; //Geef door aan de controller dat die mag gooien
+
             stuurBericht(bericht); //Verstuur het bericht.
 
             bool klik = false;
@@ -444,12 +443,19 @@ void menu()
           }
           //winner kan nu zijn {2,4,0,0} Controller 2 en 4 zijn dus dubbel en moeten nog een keer.
         }
+        lcd.clear();
+        lcd.setCursor(0,0);
+        lcd.print("    Who has    ");
+        lcd.setCursor(0,2);
+        lcd.print("    Won????    ");
+        delay(2000);
         /*
         De naam van de winnaar wordt uit het array gehaald.
         pointName[0,3,2,0]
         points[0,1,6,0]
         Controller 2 is de winnaar met 6 punten.
         */
+        lcd.clear();
         Serial.println("Speler ");
         Serial.print(pointName[winner]);
         Serial.print("has won with: ");
@@ -468,6 +474,7 @@ void menu()
         lcd.print(points[winner]);
 
         bericht.ontvangerUID = pointName[winner]; //de Winnaar wordt gestopt in ontvangerUID.
+        bericht.command = '3';
         bericht.alleCons = 1; //Alle controllers moeten dit commando aannemen.
         stuurBericht(bericht); //Verstuur het bericht.
         bericht.alleCons = 0; //Zet alle controllers uit.
@@ -525,6 +532,7 @@ void tmp()
   //om de waardes terug te brengen naar voltage moet er een berekening gedaan worden.
   int a = temp * (50 / 1023.0); //nu wordt de waarde van 1023 veranderd naar 0-100C
   temp = round(a);
+  //temp = 19;
   return temp;
 }
 
