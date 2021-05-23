@@ -246,6 +246,7 @@ void loop()
       {
         if (digitalRead(knop) == LOW && isGedrukt == false) //Als de knop wordt geklikt.
         {
+          Serial.println("Controller toegevoegd");
           bericht.verzenderUID = controllerNr;
           stuurBericht(bericht);
           isGedrukt = true;
@@ -254,24 +255,31 @@ void loop()
       isGedrukt = false;
 
 
-
+      bool klik = false;
       bool eind = false;
       while (eind == false) //Doe je mee?
       {
         if (radio.available()) //Is er een signaal binnen?
         {
           leesBericht(bericht);
+          Serial.println("INFO BINNEN");
+          isGedrukt = false;
+          klik = false;
 
           if (bericht.alleCons == 0 && bericht.ontvangerUID == controllerNr)
           {
             Serial.println("AAN DE BEURT");
-            if (digitalRead(knop) == LOW && isGedrukt == false) //Als de knop wordt geklikt.
+            while (klik == false)
             {
-              bericht.verzenderUID = controllerNr;
-              stuurBericht(bericht);
-              isGedrukt = true;
+              if (digitalRead(knop) == LOW && isGedrukt == false) //Als de knop wordt geklikt.
+              {
+                bericht.verzenderUID = controllerNr;
+                stuurBericht(bericht);
+                isGedrukt = true;
+                Serial.println("GEGOOID");
+                klik = true;
+              }
             }
-            isGedrukt = false;
           }
 
           if (bericht.alleCons == 1 && bericht.command == '4') //Einde van het spel.
@@ -281,7 +289,7 @@ void loop()
             {
               Serial.println("controller heeft verloren");
               digitalWrite(led, HIGH);
-            }    
+            }
             delay(4000);
             digitalWrite(led, LOW);
             eind = true; //Stop het spel en ga terug naar het begin.
@@ -291,9 +299,9 @@ void loop()
 
     ///delay(1000); //For testing purposes.
     noTone(buzz); //Make sure the buzzer is out.
+    }
   }
 }
-
 void stuurBericht(t_message &msg)
 {
   radio.stopListening();
