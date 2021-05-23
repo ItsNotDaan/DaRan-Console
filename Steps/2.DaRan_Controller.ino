@@ -31,7 +31,7 @@ RF24 radio(9, 8);  // CE, CSN. This is for connecting the CE and the CSN pins of
 int buzz = 7; //Buzzer
 int led = 5; //Vibration motor
 bool isGedrukt = false; //For making sure the controller can only press once.
-byte controllerNr = 2;
+byte controllerNr = 1;
 
 struct t_message
 {
@@ -80,6 +80,7 @@ void loop()
       //digitalWrite(led, HIGH);
 
       bool end = false;
+      isGedrukt = false;
       while (end == false) //While the end is false this while will be active.
       {
         //Serial.println("Wacht op signaal");
@@ -146,6 +147,7 @@ void loop()
       //.....
       //(10010 - 10 = 10000) =< 10000 = true
       //(10011 - 10 = 10001) =< 10000 = false dus doorgaan.
+      isGedrukt = false;
       long tijdTimer = 10000; //10 seconden wachten.
       unsigned long huidigeTijd = millis(); //tijd hoelang het programma al draait. Long omdat het om tijd gaat
       while (millis() - huidigeTijd < tijdTimer) //doe 10 seconden alles wat in de while staat.
@@ -158,6 +160,7 @@ void loop()
         {
           Serial.println("Knop gedrukt");
           bericht.verzenderUID = controllerNr;
+          Serial.println(bericht.verzenderUID);
           stuurBericht(bericht);
           isGedrukt = true;
         }
@@ -165,7 +168,7 @@ void loop()
       digitalWrite(led, LOW);
       isGedrukt = false;
       noTone(buzz);
-
+      bool gedrukt = false;
       bool eind = false;
       while (eind == false) //Doe je mee?
       {
@@ -180,7 +183,6 @@ void loop()
           {
             Serial.println("Controller moet gooien");
             digitalWrite(led, HIGH); //Led zodat controller weet dat die mag.
-            bool gedrukt = false;
             long tijdTimer = 5000; //5 seconden wachten.
             unsigned long huidigeTijd = millis(); //tijd hoelang het programma al draait. Long omdat het om tijd gaat
             while (millis() - huidigeTijd < tijdTimer) //Na 5 seconden klikt die automatisch.
@@ -189,6 +191,7 @@ void loop()
               {
                 Serial.println("Controller gooit");
                 bericht.verzenderUID = controllerNr;
+                Serial.println(bericht.verzenderUID);
                 stuurBericht(bericht);
                 isGedrukt = true;
                 gedrukt = true;
@@ -200,6 +203,7 @@ void loop()
               Serial.println("Controller heeft niet gedrukt in 5 seconden");
               bericht.verzenderUID = controllerNr;
               stuurBericht(bericht);
+              gedrukt = true;
             }
             digitalWrite(led, LOW); //ledje uit want controller hoeft niet meer te gooien.
           }
@@ -215,7 +219,7 @@ void loop()
             }
             digitalWrite(led, LOW);
 
-            delay(5000);
+            delay(4000);
             Serial.println("terug naar menu");
             eind = true; //Stop het spel en ga terug naar het begin.
           }
