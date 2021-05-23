@@ -275,6 +275,15 @@ void menu()
             lcd.setCursor(11,2);
             lcd.print(bericht.verzenderUID); //Show on the LCD who has won.
 
+
+
+            lcd.setCursor(0,0);
+            lcd.print(" The winner is: ");
+            lcd.setCursor(0,2);
+            lcd.print("   Player:");
+            lcd.setCursor(11,2);
+            lcd.print(bericht.verzenderUID); //Show on the LCD who has won.
+
             bericht.ontvangerUID = bericht.verzenderUID;
 
             //**************************************************
@@ -295,7 +304,7 @@ void menu()
         bericht.alleCons = 1;
         stuurBericht(bericht);
         bericht.alleCons = 0;
-        delay(4000);
+        delay(2000);
 
         aantalDrukken = 1; //terug naar start Menu
         activeren = LOW;
