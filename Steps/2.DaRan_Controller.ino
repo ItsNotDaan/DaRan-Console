@@ -74,6 +74,9 @@ void loop()
     leesBericht(bericht);
     char text = bericht.command;
 
+
+
+    /***********************************************************************************************/
     if (text == '1')//Is the incoming text '1'? Start game 1.
     {
       Serial.println("Game 1");
@@ -102,10 +105,10 @@ void loop()
           leesBericht(bericht);
           char in = bericht.command;
           Serial.println(in);
-          if (bericht.alleCons == 1) //gaat het bericht naar alle controllers?
+          if (bericht.alleCons == 1 && in == '4') //gaat het bericht naar alle controllers?
           {
-            if (in == '4') //If the incoming message is '4' it means the game has been ended.
-            {
+            //if (in == '4') //If the incoming message is '4' it means the game has been ended.
+            //{
               if (bericht.ontvangerUID == controllerNr) //Controller gewonnen?
               {
                 digitalWrite(led, HIGH);
@@ -115,12 +118,12 @@ void loop()
               digitalWrite(led, LOW);
               noTone(buzz);
               end = true; //make the bool end true. The code will leave the while.
-            }
+            //}
           }
-          if (bericht.alleCons == 0) //Gaat het bericht naar een speciafieke con?
+          if (bericht.alleCons == 0 && in == 'F') //Gaat het bericht naar een speciafieke con?
           {
-            if (in == 'F') //If the incoming message is 'F' it means you have pressed to fast.
-            {
+            //if (in == 'F') //If the incoming message is 'F' it means you have pressed to fast.
+            //{
               if (bericht.ontvangerUID == controllerNr)
               {
                 tone(buzz, 1000); //normaal laten trillen
@@ -131,7 +134,7 @@ void loop()
                 noTone(buzz);
                 //digitalWrite(vibr, LOW);
               }
-            }
+            //}
           }
         }
       }
@@ -139,6 +142,8 @@ void loop()
       isGedrukt = false; //The next game the button will be able to be pressed again. Its a reset.
     }
 
+
+    /***********************************************************************************************/
     else if (text == '2') //Start game 2 Not important now.
     {
       Serial.println("Game 2 starts");
@@ -165,7 +170,7 @@ void loop()
           isGedrukt = true;
         }
       }
-      digitalWrite(led, LOW);
+      //digitalWrite(led, LOW);
       isGedrukt = false;
       noTone(buzz);
       bool gedrukt = false;
@@ -208,7 +213,7 @@ void loop()
             digitalWrite(led, LOW); //ledje uit want controller hoeft niet meer te gooien.
           }
 
-          if (bericht.alleCons == 1 && bericht.command == '3') //Einde van het spel.
+          if (bericht.alleCons == 1 && bericht.command == '4') //Einde van het spel.
           {
             Serial.println("Alle controllers krijgen een bericht");
 
@@ -227,10 +232,62 @@ void loop()
       }
     }
 
+
+
+    /***********************************************************************************************/
     else if (text == '3')
     {
-      tone(buzz, 1500);
-    }
+      Serial.println("Game 3 starts");
+
+      isGedrukt = false;
+      long tijdTimer = 10000; //10 seconden wachten.
+      unsigned long huidigeTijd = millis(); //tijd hoelang het programma al draait. Long omdat het om tijd gaat
+      while (millis() - huidigeTijd < tijdTimer) //doe 10 seconden alles wat in de while staat.
+      {
+        if (digitalRead(knop) == LOW && isGedrukt == false) //Als de knop wordt geklikt.
+        {
+          bericht.verzenderUID = controllerNr;
+          stuurBericht(bericht);
+          isGedrukt = true;
+        }
+      }
+      isGedrukt = false;
+
+
+
+      bool eind = false;
+      while (eind == false) //Doe je mee?
+      {
+        if (radio.available()) //Is er een signaal binnen?
+        {
+          leesBericht(bericht);
+
+          if (bericht.alleCons == 0 && bericht.ontvangerUID == controllerNr)
+          {
+            Serial.println("AAN DE BEURT");
+            if (digitalRead(knop) == LOW && isGedrukt == false) //Als de knop wordt geklikt.
+            {
+              bericht.verzenderUID = controllerNr;
+              stuurBericht(bericht);
+              isGedrukt = true;
+            }
+            isGedrukt = false;
+          }
+
+          if (bericht.alleCons == 1 && bericht.command == '4') //Einde van het spel.
+          {
+            Serial.println("EINDE GAME");
+            if (bericht.ontvangerUID == controllerNr) //Heeft deze controller gewonnen?
+            {
+              Serial.println("controller heeft verloren");
+              digitalWrite(led, HIGH);
+            }    
+            delay(4000);
+            digitalWrite(led, LOW);
+            eind = true; //Stop het spel en ga terug naar het begin.
+          }
+        }
+      }
 
     ///delay(1000); //For testing purposes.
     noTone(buzz); //Make sure the buzzer is out.
