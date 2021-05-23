@@ -257,6 +257,8 @@ void menu()
         lcd.setCursor(0,2);
         lcd.print("      NOW!      ");
 
+        long reactieTijd;
+        bool isWinnaar = false;
         tijdTimer = 10000; //Wacht 10 seconden. Als er niets is gedrukt dan gwn terug.
         huidigeTijd = millis(); //tijd hoelang het programma al draait.
         while (millis() - huidigeTijd < tijdTimer) //doe voor het aantal seconden alles wat in de while staat.
@@ -266,6 +268,8 @@ void menu()
           {
             Serial.println("Winnaar is binnen");
 
+            reactieTijd = millis() - huidigeTijd;
+            isWinnaar = true;
             leesBericht(bericht);
 
             lcd.setCursor(0,0);
@@ -275,8 +279,6 @@ void menu()
             lcd.setCursor(11,2);
             lcd.print(bericht.verzenderUID); //Show on the LCD who has won.
 
-
-
             lcd.setCursor(0,0);
             lcd.print(" The winner is: ");
             lcd.setCursor(0,2);
@@ -286,16 +288,6 @@ void menu()
 
             bericht.ontvangerUID = bericht.verzenderUID;
 
-            //**************************************************
-            //Het terugsturen geeft een bug. Voor nu overslaan.
-            /*
-            bericht.command = 'T'; //T is een win.
-            bericht.ontvangerUID = bericht.verzenderUID;
-            sendMessage(bericht); //Hier zit de fout
-            */
-            //**************************************************
-
-            // delay(4000);
             tijdTimer = 0; //Stop de timer
           }
         }
@@ -304,7 +296,21 @@ void menu()
         bericht.alleCons = 1;
         stuurBericht(bericht);
         bericht.alleCons = 0;
-        delay(2000);
+
+        if (isWinnaar == true){
+          delay(2000);
+          lcd.clear();
+          lcd.setCursor(0,0);
+          lcd.print(" Reaction time: ");
+          lcd.setCursor(4,2);
+          lcd.print(reactieTijd);
+          lcd.setCursor(11,2);
+          lcd.print("MS"); //Show on the LCD who has won.
+          delay(2000);
+        }
+        else{
+          delay(4000);
+        }
 
         aantalDrukken = 1; //terug naar start Menu
         activeren = LOW;
@@ -393,13 +399,16 @@ void menu()
 
         Serial.println(e); //testen
         Serial.println(spelers); //testen
-        int rondes;
+        int rondes = 0;
         int points[4] = {};
-        char pointName[4] = {};
+        int pointName[4] = {};
         while (spelers != rondes) //Rondes hetzelfde als het aantal mensen dat had gedrukt?
         {
+          Serial.println(rondes);
+          Serial.println(spelers);
           for (int a = 0; a < spelers; a++) //loop van 0 tot het aantal mensen dat heeft gedrukt.
           {
+            Serial.println(aangemeld[a]);
             lcd.clear();
             lcd.setCursor(0,0);
             lcd.print(" Controller: ");
@@ -416,20 +425,26 @@ void menu()
             {
               if (radio.available()) //signaal binnen?
               {
-                bool klaar = false;
+                //bool klaar = false;
                 leesBericht(bericht);
+                Serial.println("Data binnen");
+                Serial.println(bericht.verzenderUID);
+                Serial.println(aangemeld[a]);
                 if (bericht.verzenderUID == aangemeld[a]) //Zelfde als degene die als eerste mocht gooien?
                 {
+                  Serial.println("In de IF");
                   int gooi = random(1,6); //maak een getal tussen de 1 en 6.
                   points[a] = gooi; //De waarde van gooi in array points.
                   pointName[a] = bericht.verzenderUID; //De controller naam van de gooier op dezelfde plek als de hoogste.
-
+                  Serial.println(points[a]);
+                  Serial.println(pointName[a]);
                   klik = true;
                 }
               }
             }
+            rondes++; //Langs alle spelers gaan.
+            Serial.println(rondes);
           }
-          rondes++; //Langs alle spelers gaan.
         }
 
         int aantal1, aantal2, aantal;
@@ -465,7 +480,8 @@ void menu()
         Controller 2 is de winnaar met 6 punten.
         */
         lcd.clear();
-        Serial.println("Speler ");
+        Serial.print("Speler ");
+        Serial.print(winner);
         Serial.print(pointName[winner]);
         Serial.print("has won with: ");
         Serial.print(points[winner]);
@@ -508,19 +524,17 @@ void menu()
 
       if(activeren == HIGH)
       {
-       Serial.print("4 actief");
-       Serial.print("\n");
+       lcd.setCursor(0,0);
+       lcd.print("  Dobbelsteen   ");
        lcd.setCursor(0,2);
-       lcd.print("  game 3 actief ");
+       lcd.print("     Active     ");
 
-       //radio.begin(); //start de zender
-       //radio.openWritingPipe(control1); //init waar de zender naartoe moet verzenden.
-       radio.stopListening(); //door te stoppen met luisteren wordt het een zender.
+       bericht.command = '2'; //command 1 tells the cons that game 1 starts.
+       stuurBericht(bericht); //Verstuur het bericht.
 
-       const char text[] = "3"; //maak een array met karakters genaamd text. Stop hierin "Hello World".
-       radio.write(&text, sizeof(text)); //verstuur de data in de text.
 
-       delay(1000);
+
+
        aantalDrukken = 1; //terug naar start Menu
        lcd.clear();
        activeren = LOW;
