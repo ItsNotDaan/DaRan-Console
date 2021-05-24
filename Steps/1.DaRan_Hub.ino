@@ -37,6 +37,7 @@ RF24 radio(9, 8);  // CE, CSN Dit is nodig voor de library om te kijken welke pi
 
 
 // ----- Declare Global Variables -----
+int buzz = 5;
 int aantalDrukken = 1; //het aantal keer drukken staat standaard op 0 dus beginscherm.
 int laatsteMenu = 0; //de plek waar het menu voor het laatste was.
 int laatsteDruk = 1; // laatste case
@@ -66,6 +67,8 @@ void setup()
   pinMode(LDR, INPUT);
   pinMode(PT100, INPUT);
   pinMode(led, OUTPUT);
+  pinMode(buzz, OUTPUT);
+
   Serial.begin(9600);
 
   radio.begin(); //Init the transceiver
@@ -85,20 +88,16 @@ void setup()
   lcd.begin(16,2);
   lcd.home();
 
-  lcd.setCursor(0,0);
-  lcd.print(" DaRan Console  ");
-  lcd.setCursor(0,2);
-  lcd.print("Push the buttons");
-  delay(2000);
-  lcd.clear();
+  opstartProgramma();
+
 }
 
 //MAIN
 void loop()
 {
-  if (digitalRead(knopR) == HIGH) {gedrukt = 1; isGedrukt = HIGH;}
-  if (digitalRead(knopL) == HIGH) {gedrukt = 2; isGedrukt = HIGH;}
-  if (digitalRead(knopM) == HIGH) {gedrukt = 3; isGedrukt = HIGH;}
+  if (digitalRead(knopR) == HIGH) {gedrukt = 1; isGedrukt = HIGH; tone(buzz,1000,100);}
+  if (digitalRead(knopL) == HIGH) {gedrukt = 2; isGedrukt = HIGH; tone(buzz,1000,100);}
+  if (digitalRead(knopM) == HIGH) {gedrukt = 3; isGedrukt = HIGH; tone(buzz,1000,100);}
 
   if(isGedrukt == HIGH)
   {
@@ -662,6 +661,29 @@ String lght()
     light = "Day";
   }
   return light;
+}
+
+void opstartProgramma(){
+    tmp();
+    +
+    lcd.setCursor(0,0);
+    lcd.print(" DaRan Console  ");
+    lcd.setCursor(0,2);
+    lcd.print("  Daan & Emran  ");
+
+    tone(buzz,200,400);
+    delay(600);
+    tone(buzz,750);
+    delay(150);
+    tone(buzz,1000,200);
+    delay(250);
+    tone(buzz,1000,200);
+    delay(250);
+    tone(buzz,1000,200);
+    delay(250);
+    tone(buzz,1000,500);
+    noTone(buzz);
+    lcd.clear();
 }
 
 void stuurBericht(t_message &msg)

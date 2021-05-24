@@ -89,6 +89,7 @@ void loop()
         //Serial.println("Wacht op signaal");
         if (digitalRead(knop) == LOW && isGedrukt == false) //If the button is pressed and the button has not yes been pressed. This way there can only be pressed ones a game.
         {
+          tone(buzz, 1000, 100);
           Serial.println("Knop gedrukt"); //Show that the button has been pressed. It always gets here.
 
           bericht.verzenderUID = controllerNr;
@@ -112,11 +113,14 @@ void loop()
               if (bericht.ontvangerUID == controllerNr) //Controller gewonnen?
               {
                 digitalWrite(led, HIGH);
+                gewonnen(); //duurt 2 seconden
+                delay(2000);
+              }
+              else {
+                delay(4000); //4 seconden wachten
               }
               Serial.println("Signaal 4 is binnen");
-              delay(4000); //4 seconden wachten
               digitalWrite(led, LOW);
-              noTone(buzz);
               end = true; //make the bool end true. The code will leave the while.
             //}
           }
@@ -126,13 +130,9 @@ void loop()
             //{
               if (bericht.ontvangerUID == controllerNr)
               {
-                tone(buzz, 1000); //normaal laten trillen
+                tone(buzz, 300, 500);
                 digitalWrite(led, HIGH);
-                //digitalWrite(vibr, HIGH);
                 delay(1000);
-                //digitalWrite(led, LOW);
-                noTone(buzz);
-                //digitalWrite(vibr, LOW);
               }
             //}
           }
@@ -163,6 +163,7 @@ void loop()
         }*/
         if (digitalRead(knop) == LOW && isGedrukt == false) //Als de knop wordt geklikt.
         {
+          tone(buzz,1000,100);
           Serial.println("Knop gedrukt");
           bericht.verzenderUID = controllerNr;
           Serial.println(bericht.verzenderUID);
@@ -172,7 +173,6 @@ void loop()
       }
       //digitalWrite(led, LOW);
       isGedrukt = false;
-      noTone(buzz);
       bool gedrukt = false;
       bool eind = false;
       while (eind == false) //Doe je mee?
@@ -194,6 +194,7 @@ void loop()
             {
               if (digitalRead(knop) == LOW && isGedrukt == false) //Knop kan gedrukt worden.
               {
+                tone(buzz, 1000, 100);
                 Serial.println("Controller gooit");
                 bericht.verzenderUID = controllerNr;
                 Serial.println(bericht.verzenderUID);
@@ -215,17 +216,18 @@ void loop()
 
           if (bericht.alleCons == 1 && bericht.command == '4') //Einde van het spel.
           {
-            Serial.println("Alle controllers krijgen een bericht");
+            Serial.println("Signaal 4 is binnen");
 
-            if (bericht.ontvangerUID == controllerNr) //Heeft deze controller gewonnen?
+            if (bericht.ontvangerUID == controllerNr) //Controller gewonnen?
             {
-              Serial.println("controller heeft gewonnen");
               digitalWrite(led, HIGH);
+              gewonnen(); //duurt 2 seconden
+              delay(2000);
+            }
+            else {
+              delay(4000); //4 seconden wachten
             }
             digitalWrite(led, LOW);
-
-            delay(4000);
-            Serial.println("terug naar menu");
             eind = true; //Stop het spel en ga terug naar het begin.
           }
         }
@@ -285,12 +287,15 @@ void loop()
           if (bericht.alleCons == 1 && bericht.command == '4') //Einde van het spel.
           {
             Serial.println("EINDE GAME");
-            if (bericht.ontvangerUID == controllerNr) //Heeft deze controller gewonnen?
+            if (bericht.ontvangerUID == controllerNr) //Controller verloren?
             {
-              Serial.println("controller heeft verloren");
               digitalWrite(led, HIGH);
+              verloren(); //duurt 2 seconden
+              delay(2000);
             }
-            delay(4000);
+            else {
+              delay(4000); //4 seconden wachten
+            }
             digitalWrite(led, LOW);
             eind = true; //Stop het spel en ga terug naar het begin.
           }
@@ -301,6 +306,38 @@ void loop()
     noTone(buzz); //Make sure the buzzer is out.
     }
   }
+}
+
+void gewonnen(){//Duurt 2 seconden
+  int a = 500;
+    for(int i = 0; i < 5; i++)
+    {
+      tone(buzz,a,150);
+      delay(150);
+      a = a + 100;
+    }
+    tone(buzz,1000,300);
+    delay(400);
+    tone(buzz,1000,300);
+    delay(400);
+    tone(buzz,1000,600);
+    delay(600);
+}
+
+void verloren(){ //Duurt 2 seconden
+  int a = 500;
+    for(int i = 0; i < 5; i++)
+    {
+      tone(buzz,a,150);
+      delay(150);
+      a = a + 100;
+    }
+    tone(buzz,600,300);
+    delay(400);
+    tone(buzz,400,300);
+    delay(400);
+    tone(buzz,200,600);
+    delay(600);
 }
 void stuurBericht(t_message &msg)
 {
