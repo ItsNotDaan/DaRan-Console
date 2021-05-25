@@ -73,7 +73,8 @@ void loop()
     //radio.read(t_message &bericht, sizeof(t_message));
     leesBericht(bericht);
     char text = bericht.command;
-
+    flush_rx()
+    flush_tx()
 
 
     /***********************************************************************************************/
@@ -94,6 +95,7 @@ void loop()
 
           bericht.verzenderUID = controllerNr;
           stuurBericht(bericht);
+
           //radio.write(t_message &bericht, sizeof(t_message));
 
           isGedrukt = true; //isGedrukt has been put on high. This will allow to not constantly press the button. No cheating ;)

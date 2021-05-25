@@ -311,6 +311,8 @@ void menu()
           lcd.print("    clicked!    ");
           delay(4000);
         }
+        flush_rx()
+        flush_tx()
 
         aantalDrukken = 1; //terug naar start Menu
         activeren = LOW;
@@ -482,6 +484,8 @@ void menu()
         bericht.alleCons = 0; //Zet alle controllers uit.
 
         delay(4000);
+        flush_rx()
+        flush_tx()
         aantalDrukken = 1; //terug naar start Menu
         lcd.clear();
         activeren = LOW;
@@ -653,6 +657,8 @@ void menu()
            delay (4000);
          }
 
+         flush_rx()
+         flush_tx()
          aantalDrukken = 1; //terug naar start Menu
          lcd.clear();
          activeren = LOW;
