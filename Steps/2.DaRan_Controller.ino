@@ -31,7 +31,7 @@ RF24 radio(9, 8);  // CE, CSN. This is for connecting the CE and the CSN pins of
 int buzz = 7; //Buzzer
 int led = 5; //Vibration motor
 bool isGedrukt = false; //For making sure the controller can only press once.
-byte controllerNr = 1;
+byte controllerNr = 2;
 
 struct t_message
 {
@@ -73,8 +73,8 @@ void loop()
     //radio.read(t_message &bericht, sizeof(t_message));
     leesBericht(bericht);
     char text = bericht.command;
-    flush_rx()
-    flush_tx()
+    radio.flush_rx();
+    radio.flush_tx();
 
 
     /***********************************************************************************************/
