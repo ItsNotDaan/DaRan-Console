@@ -573,7 +573,7 @@ void menu()
                /*
                1,2,3,4 -> 1,2,3  spelersCheck
                1,2,3,4    5,6,7 verloren!
-               */s
+               */
                spelersCheck = 0;
              }
              bool klik = false;
@@ -587,7 +587,6 @@ void menu()
              bericht.ontvangerUID = aangemeld[spelersCheck]; //Geef door aan de controller dat die mag gooien
              stuurBericht(bericht);
 
-             bool klik = false;
              tijdTimer = 7000; //7 seconden wachten.
              huidigeTijd = millis();
              while (millis() - huidigeTijd < tijdTimer)//wacht voor 7 seconden
