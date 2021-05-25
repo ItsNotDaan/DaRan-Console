@@ -353,34 +353,50 @@ void menu()
         //.....
         //(10010 - 10 = 10000) =< 10000 = true
         //(10011 - 10 = 10001) =< 10000 = false dus doorgaan.
+        bool tekst = true;
         int aangemeld[4]; //een array met 4 plekjes
         int spelers = 0; //Voor het bijvoegen van dingen in het array
         long tijdTimer = 10000; //10 seconden wachten.
+        long tekstTijd = 1000; //Na 1 seconden moet de tekst weer op het scherm komen.
+        unsigned long tekstHuidig;
         unsigned long huidigeTijd = millis(); //tijd hoelang het programma al draait. Long omdat het om tijd gaat
         while (millis() - huidigeTijd < tijdTimer) //doe 10 seconden lang mensen toevoegen die mee willen doen.
         {
-         if (radio.available()) //als er iets binnenkomt.
-         {
-           Serial.print("Bericht binnen");
-           leesBericht(bericht); //Lees het inkomende bericht
-           aangemeld[spelers] = bericht.verzenderUID; //Elke keer als er iets binnenkomt dan wordt de waarde van de controller in de aangemelde array gegooid.
-           spelers++;
-           lcd.clear();
-           lcd.setCursor(0,0);
-           lcd.print("  Player: ");
-           lcd.setCursor(11,0);
-           lcd.print(bericht.verzenderUID);
-           lcd.setCursor(0,2);
-           lcd.print("     Added    ");
+          if (millis() - tekstHuidig > tekstTijd && tekst == false) //Na 1 seconden laat zien dat iemand mag drukken.
+          {
+            Serial.print("Reset bericht");
+            lcd.clear();
+            lcd.setCursor(0,0);
+            lcd.print("  Press to add  ");
+            lcd.setCursor(0,2);
+            lcd.print("your controller ");
+            tekst = true;
+          }
+          if (radio.available()) //als er iets binnenkomt.
+          {
+             Serial.print("Bericht binnen");
+             leesBericht(bericht); //Lees het inkomende bericht
+             aangemeld[spelers] = bericht.verzenderUID; //Elke keer als er iets binnenkomt dan wordt de waarde van de controller in de aangemelde array gegooid.
+             spelers++;
+             lcd.clear();
+             lcd.setCursor(0,0);
+             lcd.print("  Player: ");
+             lcd.setCursor(11,0);
+             lcd.print(bericht.verzenderUID);
+             lcd.setCursor(0,2);
+             lcd.print("     Added    ");
 
-           delay(500);
-
-           lcd.setCursor(0,0);
-           lcd.print("  Press to add  ");
-           lcd.setCursor(0,2);
-           lcd.print("your controller ");
-           //Doordat er bij de controller maar 1 keer gedrukt kan worden staat alles erin.
-         }
+             tekstHuidig = millis();
+             tekst = false;
+             /*
+             delay(500);
+             lcd.setCursor(0,0);
+             lcd.print("  Press to add  ");
+             lcd.setCursor(0,2);
+             lcd.print("your controller ");
+             */
+             //Doordat er bij de controller maar 1 keer gedrukt kan worden staat alles erin.
+          }
         }
 
         if (spelers > 0) //Is er wel iemand die wil spelen?
@@ -519,34 +535,44 @@ void menu()
          lcd.setCursor(0,2);
          lcd.print("your controller ");
 
+         bool tekst = true;
          int aangemeld[4]; //een array met 4 plekjes
          int a = 0; //Voor het bijvoegen van dingen in het array
+         long tekstTijd = 1000; //Na 1 seconden moet de tekst weer op het scherm komen.
+         unsigned long tekstHuidig;
          long tijdTimer = 10000; //10 seconden wachten.
          unsigned long huidigeTijd = millis(); //tijd hoelang het programma al draait. Long omdat het om tijd gaat
          while (millis() - huidigeTijd < tijdTimer) //doe 10 seconden lang mensen toevoegen die mee willen doen.
          {
-            if (radio.available()) //als er iets binnenkomt.
-            {
-              Serial.println("Bericht binnen");
-              leesBericht(bericht); //Lees het inkomende bericht
-              aangemeld[a] = bericht.verzenderUID; //Elke keer als er iets binnenkomt dan wordt de waarde van de controller in de aangemelde array gegooid.
-              a++;
-              lcd.clear();
-              lcd.setCursor(0,0);
-              lcd.print("  Player: ");
-              lcd.setCursor(11,0);
-              lcd.print(bericht.verzenderUID);
-              lcd.setCursor(0,2);
-              lcd.print("     Added    ");
+           if (millis() - tekstHuidig > tekstTijd && tekst == false) //Na 1 seconden laat zien dat iemand mag drukken.
+           {
+             Serial.print("Reset bericht");
+             lcd.clear();
+             lcd.setCursor(0,0);
+             lcd.print("  Press to add  ");
+             lcd.setCursor(0,2);
+             lcd.print("your controller ");
+             tekst = true;
+           }
 
-              delay(500);
+           if (radio.available()) //als er iets binnenkomt.
+           {
+             Serial.println("Bericht binnen");
+             leesBericht(bericht); //Lees het inkomende bericht
+             aangemeld[a] = bericht.verzenderUID; //Elke keer als er iets binnenkomt dan wordt de waarde van de controller in de aangemelde array gegooid.
+             a++;
+             lcd.clear();
+             lcd.setCursor(0,0);
+             lcd.print("  Player: ");
+             lcd.setCursor(11,0);
+             lcd.print(bericht.verzenderUID);
+             lcd.setCursor(0,2);
+             lcd.print("     Added    ");
 
-              lcd.setCursor(0,0);
-              lcd.print("  Press to add  ");
-              lcd.setCursor(0,2);
-              lcd.print("your controller ");
-              //Doordat er bij de controller maar 1 keer gedrukt kan worden staat alles erin.
-            }
+             tekstHuidig = millis();
+             tekst = false;
+             //Doordat er bij de controller maar 1 keer gedrukt kan worden staat alles erin.
+           }
          }
 
 
@@ -562,12 +588,13 @@ void menu()
          {
            while (rondesKlaar != rondes) //Rondes hetzelfde als het aantal mensen dat had gedrukt?
            {
-            Serial.print("rondesKlaar = ");
-            Serial.println(rondesKlaar);
-            Serial.print("spelersCheck = ");
-            Serial.println(spelersCheck);
-            Serial.print("spelers = ");
-            Serial.println(spelers);
+             delay(500);
+             Serial.print("rondesKlaar = ");
+             Serial.println(rondesKlaar);
+             Serial.print("spelersCheck = ");
+             Serial.println(spelersCheck);
+             Serial.print("spelers = ");
+             Serial.println(spelers);
              if (spelers == spelersCheck) //Check of de spelers zijn geweest.
              {
                /*
@@ -605,8 +632,7 @@ void menu()
                    lcd.print(aangemeld[spelersCheck]);
                    lcd.setCursor(0,2);
                    lcd.print("   has clicked! ");
-
-                   delay(500);
+                   tijdTimer = 0;
                  }
                }
              }

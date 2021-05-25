@@ -159,10 +159,6 @@ void loop()
       unsigned long huidigeTijd = millis(); //tijd hoelang het programma al draait. Long omdat het om tijd gaat
       while (millis() - huidigeTijd < tijdTimer) //doe 10 seconden alles wat in de while staat.
       {
-        /*if (millis() - huidigeTijd > 8000) //nog 2 seconden om jezelf toe te voegen
-        {
-            digitalWrite(led, HIGH);
-        }*/
         if (digitalRead(knop) == LOW && isGedrukt == false) //Als de knop wordt geklikt.
         {
           tone(buzz,1000,100);
