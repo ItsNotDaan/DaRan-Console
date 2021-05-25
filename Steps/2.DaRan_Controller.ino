@@ -268,12 +268,14 @@ void loop()
           leesBericht(bericht);
           Serial.println("INFO BINNEN");
           isGedrukt = false;
-          klik = false;
 
           if (bericht.alleCons == 0 && bericht.ontvangerUID == controllerNr)
           {
             Serial.println("AAN DE BEURT");
-            while (klik == false)
+
+            tijdTimer = 5000; //5 seconden wachten.
+            huidigeTijd = millis(); //tijd hoelang het programma al draait. Long omdat het om tijd gaat
+            while (millis() - huidigeTijd < tijdTimer)
             {
               if (digitalRead(knop) == LOW && isGedrukt == false) //Als de knop wordt geklikt.
               {
@@ -281,8 +283,13 @@ void loop()
                 stuurBericht(bericht);
                 isGedrukt = true;
                 Serial.println("GEGOOID");
-                klik = true;
+                tijdTimer = 0;
               }
+            }
+            if (isGedrukt == false) //Na 5 seconden nog niet gedrukt? verstuur.
+            {
+              bericht.verzenderUID = controllerNr;
+              stuurBericht(bericht);
             }
           }
 

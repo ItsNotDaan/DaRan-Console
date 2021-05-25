@@ -311,8 +311,8 @@ void menu()
           lcd.print("    clicked!    ");
           delay(4000);
         }
-        flush_rx()
-        flush_tx()
+        radio.flush_rx();
+        radio.flush_tx();
 
         aantalDrukken = 1; //terug naar start Menu
         activeren = LOW;
@@ -403,19 +403,20 @@ void menu()
 
               stuurBericht(bericht); //Verstuur het bericht.
 
-              bool klik = false;
-              while (klik == false) //klik false?
+
+              tijdTimer = 7000; //7 seconden wachten.
+              huidigeTijd = millis();
+              while (millis() - huidigeTijd < tijdTimer)//wacht voor 7 seconden
               {
                 if (radio.available()) //signaal binnen?
                 {
-                  //bool klaar = false;
                   leesBericht(bericht);
                   if (bericht.verzenderUID == aangemeld[a]) //Zelfde als degene die als eerste mocht gooien?
                   {
                     int gooi = random(1,6); //maak een getal tussen de 1 en 6.
                     points[a] = gooi; //De waarde van gooi in array points.
                     pointName[a] = bericht.verzenderUID; //De controller naam van de gooier op dezelfde plek als de hoogste.
-                    klik = true;
+                    tijdTimer = 0;
                   }
                 }
               }
@@ -484,8 +485,8 @@ void menu()
         bericht.alleCons = 0; //Zet alle controllers uit.
 
         delay(4000);
-        flush_rx()
-        flush_tx()
+        radio.flush_rx();
+        radio.flush_tx();
         aantalDrukken = 1; //terug naar start Menu
         lcd.clear();
         activeren = LOW;
@@ -494,7 +495,7 @@ void menu()
 
 /************************************************************************************************/
 
-      case 4:
+      case 4: //Clicking till you die.
       Serial.print("Menu 4");
       Serial.print("\n");
 
@@ -572,7 +573,7 @@ void menu()
                /*
                1,2,3,4 -> 1,2,3  spelersCheck
                1,2,3,4    5,6,7 verloren!
-               */
+               */s
                spelersCheck = 0;
              }
              bool klik = false;
@@ -582,11 +583,14 @@ void menu()
              lcd.setCursor(14,0);
              lcd.print(aangemeld[spelersCheck]);
              lcd.setCursor(0,2);
-             lcd.print("  can click  ");
+             lcd.print("   can click!   ");
              bericht.ontvangerUID = aangemeld[spelersCheck]; //Geef door aan de controller dat die mag gooien
              stuurBericht(bericht);
 
-             while(klik == false)
+             bool klik = false;
+             tijdTimer = 7000; //7 seconden wachten.
+             huidigeTijd = millis();
+             while (millis() - huidigeTijd < tijdTimer)//wacht voor 7 seconden
              {
                if (radio.available()) //signaal binnen?
                {
@@ -601,16 +605,14 @@ void menu()
                    lcd.setCursor(14,0);
                    lcd.print(aangemeld[spelersCheck]);
                    lcd.setCursor(0,2);
-                   lcd.print(" has clicked ");
+                   lcd.print("   has clicked! ");
 
-                   spelersCheck++;
-                   rondesKlaar++;
                    delay(500);
-
-                   klik = true;
                  }
                }
              }
+             spelersCheck++;
+             rondesKlaar++;
            }
            spelersCheck--; //Er moet altijd 1 af want als laatste wordt er 1 gegooid.
 
@@ -657,8 +659,9 @@ void menu()
            delay (4000);
          }
 
-         flush_rx()
-         flush_tx()
+         radio.flush_rx();
+         radio.flush_tx();
+
          aantalDrukken = 1; //terug naar start Menu
          lcd.clear();
          activeren = LOW;
