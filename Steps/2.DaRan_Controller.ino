@@ -310,34 +310,34 @@ void loop()
 
 void gewonnen(){//Duurt 2 seconden
   int a = 500;
-    for(int i = 0; i < 5; i++)
-    {
-      tone(buzz,a,150);
-      delay(150);
-      a = a + 100;
-    }
-    tone(buzz,1000,300);
-    delay(400);
-    tone(buzz,1000,300);
-    delay(400);
-    tone(buzz,1000,600);
-    delay(600);
+  for(int i = 0; i < 5; i++)
+  {
+    tone(buzz,a,150);
+    delay(150);
+    a = a + 100;
+  }
+  tone(buzz,1000,300);
+  delay(400);
+  tone(buzz,1000,300);
+  delay(400);
+  tone(buzz,1000,600);
+  delay(600);
 }
 
 void verloren(){ //Duurt 2 seconden
   int a = 500;
-    for(int i = 0; i < 5; i++)
-    {
-      tone(buzz,a,150);
-      delay(150);
-      a = a + 100;
-    }
-    tone(buzz,600,300);
-    delay(400);
-    tone(buzz,400,300);
-    delay(400);
-    tone(buzz,200,600);
-    delay(600);
+  for(int i = 0; i < 5; i++)
+  {
+    tone(buzz,a,150);
+    delay(150);
+    a = a + 100;
+  }
+  tone(buzz,600,300);
+  delay(400);
+  tone(buzz,400,300);
+  delay(400);
+  tone(buzz,200,600);
+  delay(600);
 }
 void stuurBericht(t_message &msg)
 {
