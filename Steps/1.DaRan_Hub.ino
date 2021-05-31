@@ -488,16 +488,16 @@ void menu()
         bericht.alleCons = 1;
         stuurBericht(bericht);
         bericht.alleCons = 0;
-        Animatie_scherm(A1, 200);
-        Animatie_scherm(A2, 200);
-        Animatie_scherm(A3, 200);
-        Animatie_scherm(A4, 200);
-        Animatie_scherm(A5, 200);
-        Animatie_scherm(A6, 200);
-        Animatie_scherm(A7, 200);
-        Animatie_scherm(A8, 200);
-        Animatie_scherm(A9, 200);
-        Animatie_scherm(A10, 200);
+        Animatie_scherm(21, 400);
+        Animatie_scherm(22, 400);
+        Animatie_scherm(23, 200);
+        Animatie_scherm(24, 200);
+        Animatie_scherm(25, 200);
+        Animatie_scherm(26, 200);
+        Animatie_scherm(27, 200);
+        Animatie_scherm(28, 200);
+        Animatie_scherm(29, 200);
+        Animatie_scherm(30, 200);
 
 
         aantalDrukken = 1; //terug naar start Menu
