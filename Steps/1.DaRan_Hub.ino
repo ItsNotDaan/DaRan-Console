@@ -427,8 +427,10 @@ void menu()
         //(10011 - 10 = 10001) =< 10000 = false dus doorgaan.
         bool verzonden = true;
         unsigned long tijdTimer = random(5000, 20000); //random tijd tussen de 5 en 20 seconden
-        //long tijdTimer = 5000; //for testing
         unsigned long huidigeTijd = millis(); //tijd hoelang het programma al draait. Long omdat het om tijd gaat
+        unsigned long anTijd = 1000;
+        unsigned long anHuidigeTijd = millis();
+        int i = 1;
         while (millis() - huidigeTijd < tijdTimer) //doe voor het aantal seconden alles wat in de while staat.
         {
           if (radio.available()) //als er iets binnenkomt.
@@ -440,6 +442,20 @@ void menu()
             bericht.command = 'F'; //F is van verloren
             bericht.ontvangerUID = bericht.verzenderUID;
             verzonden = false;
+          }
+          if (!radio.available()) //Zolang er geen data binnenkomt doe een animatie.
+          {
+            if(millis() - anHuidigeTijd > anTijd) // Elke seconden hierin.
+            {
+              anHuidigeTijd = millis();
+              if(i < 5){
+                i++;
+              }
+              else {
+                i = 1;
+              }
+            }
+            Animatie_scherm(i,1);
           }
         }
 
@@ -573,6 +589,10 @@ void menu()
             lcd.setCursor(0,2);
             lcd.print("your controller ");
             tekst = true;
+          }
+          if (!radio.available() && tekst == false) //Zoalg tekst nog false is en er geen data binnenkomt laat zien wie heeft gedrukt.
+          {
+            Animatie_scherm(bericht.verzenderUID, 1);
           }
           if (radio.available()) //als er iets binnenkomt.
           {
@@ -755,6 +775,11 @@ void menu()
              lcd.setCursor(0,2);
              lcd.print("your controller ");
              tekst = true;
+           }
+
+           if (!radio.available() && tekst == false) //Zoalg tekst nog false is en er geen data binnenkomt laat zien wie heeft gedrukt.
+           {
+             Animatie_scherm(bericht.verzenderUID, 1);
            }
 
            if (radio.available()) //als er iets binnenkomt.
