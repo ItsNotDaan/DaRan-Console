@@ -10,14 +10,13 @@
 
 */
 
-// include libraries
+// include librariesa
 #include <Wire.h>
 #include <LiquidCrystal_I2C.h>
 //voor transciever
 #include <SPI.h>
 #include <nRF24L01.h>
 #include <RF24.h>
-#include <Arduino.h>
 
 // ----- Declare Constants -----
 
@@ -213,6 +212,7 @@ RF24 radio(9, 8);  // CE, CSN Dit is nodig voor de library om te kijken welke pi
 
 
 // ----- Declare Global Variables -----
+int buzz = 23;
 int aantalDrukken = 1; //het aantal keer drukken staat standaard op 0 dus beginscherm.
 int laatsteMenu = 0; //de plek waar het menu voor het laatste was.
 int laatsteDruk = 1; // laatste case
@@ -242,6 +242,7 @@ void setup()
   pinMode(LDR, INPUT);
   pinMode(PT100, INPUT);
   pinMode(led, OUTPUT);
+  pinMode(buzz, OUTPUT);
 
   pinMode(LEDARRAY_D, OUTPUT);
   pinMode(LEDARRAY_C, OUTPUT);
@@ -273,20 +274,16 @@ void setup()
   lcd.begin(16,2);
   lcd.home();
 
-  lcd.setCursor(0,0);
-  lcd.print(" DaRan Console  ");
-  lcd.setCursor(0,2);
-  lcd.print("Push the buttons");
-  delay(2000);
-  lcd.clear();
+  opstartProgramma();
+
 }
 
 //MAIN
 void loop()
 {
-  if (digitalRead(knopR) == HIGH) {gedrukt = 1; isGedrukt = HIGH;}
-  if (digitalRead(knopL) == HIGH) {gedrukt = 2; isGedrukt = HIGH;}
-  if (digitalRead(knopM) == HIGH) {gedrukt = 3; isGedrukt = HIGH;}
+  if (digitalRead(knopR) == HIGH) {gedrukt = 1; isGedrukt = HIGH; tone(buzz,1000,100);}
+  if (digitalRead(knopL) == HIGH) {gedrukt = 2; isGedrukt = HIGH; tone(buzz,1000,100);}
+  if (digitalRead(knopM) == HIGH) {gedrukt = 3; isGedrukt = HIGH; tone(buzz,1000,100);}
 
   if(isGedrukt == HIGH)
   {
@@ -383,9 +380,9 @@ void menu()
       Serial.print("\n");
 
       lcd.setCursor(0,0);
-      lcd.print("Press middle to:");
+      lcd.print(" Press to play: ");
       lcd.setCursor(0,2);
-      lcd.print("  start game 1  ");
+      lcd.print(" Fastest Presser");
 
       if(activeren == HIGH)
       {
@@ -395,11 +392,11 @@ void menu()
         lcd.print("     Active     ");
 
         bericht.command = '1'; //command 1 tells the cons that game 1 starts.
-        bericht.alleCons = 1; //Alle controllers moeten dit commando aannemen.
         stuurBericht(bericht); //Verstuur het bericht.
-        bericht.alleCons = 0; //Zet alle controllers uit.
+        bericht.ontvangerUID = 0;
 
         lcd.clear();
+        //16x16 dot display = "3"
         //16x16 dot display = "3"
         lcd.setCursor(8,0);
         lcd.print("3");
@@ -417,7 +414,9 @@ void menu()
 
         //16x16 dot display = "Timer start"
         lcd.setCursor(0,0);
-        lcd.print("  Timer starts  ");
+        lcd.print("      WAIT!     ");
+        lcd.setCursor(0,2);
+        lcd.print(" Timer started! ");
 
 
 
@@ -426,8 +425,9 @@ void menu()
         //.....
         //(10010 - 10 = 10000) =< 10000 = true
         //(10011 - 10 = 10001) =< 10000 = false dus doorgaan.
-        //unsigned long tijdTimer = random(5000, 20000); //random tijd tussen de 5 en 20 seconden
-        long tijdTimer = 5000; //for testing
+        bool verzonden = true;
+        unsigned long tijdTimer = random(5000, 20000); //random tijd tussen de 5 en 20 seconden
+        //long tijdTimer = 5000; //for testing
         unsigned long huidigeTijd = millis(); //tijd hoelang het programma al draait. Long omdat het om tijd gaat
         while (millis() - huidigeTijd < tijdTimer) //doe voor het aantal seconden alles wat in de while staat.
         {
@@ -439,7 +439,7 @@ void menu()
 
             bericht.command = 'F'; //F is van verloren
             bericht.ontvangerUID = bericht.verzenderUID;
-            stuurBericht(bericht);
+            verzonden = false;
           }
         }
 
@@ -447,7 +447,10 @@ void menu()
         lcd.print("CLICK THE BUTTON");
         lcd.setCursor(0,2);
         lcd.print("      NOW!      ");
+        bericht.ontvangerUID = 0;
 
+        long reactieTijd;
+        bool isWinnaar = false;
         tijdTimer = 10000; //Wacht 10 seconden. Als er niets is gedrukt dan gwn terug.
         huidigeTijd = millis(); //tijd hoelang het programma al draait.
         while (millis() - huidigeTijd < tijdTimer) //doe voor het aantal seconden alles wat in de while staat.
@@ -458,6 +461,8 @@ void menu()
           {
             Serial.println("Winnaar is binnen");
 
+            reactieTijd = millis() - huidigeTijd;
+            isWinnaar = true;
             leesBericht(bericht);
 
             lcd.setCursor(0,0);
@@ -467,19 +472,8 @@ void menu()
             lcd.setCursor(11,2);
             lcd.print(bericht.verzenderUID); //Show on the LCD who has won.
 
-
             bericht.ontvangerUID = bericht.verzenderUID;
 
-            //**************************************************
-            //Het terugsturen geeft een bug. Voor nu overslaan.
-            /*
-            bericht.command = 'T'; //T is een win.
-            bericht.ontvangerUID = bericht.verzenderUID;
-            sendMessage(bericht); //Hier zit de fout
-            */
-            //**************************************************
-
-            // delay(4000);
             tijdTimer = 0; //Stop de timer
           }
         }
@@ -488,17 +482,39 @@ void menu()
         bericht.alleCons = 1;
         stuurBericht(bericht);
         bericht.alleCons = 0;
-        Animatie_scherm(21, 400);
-        Animatie_scherm(22, 400);
-        Animatie_scherm(23, 200);
-        Animatie_scherm(24, 200);
-        Animatie_scherm(25, 200);
-        Animatie_scherm(26, 200);
-        Animatie_scherm(27, 200);
-        Animatie_scherm(28, 200);
-        Animatie_scherm(29, 200);
-        Animatie_scherm(30, 200);
 
+        if (isWinnaar == true){
+          Animatie_scherm(bericht.verzenderUID, 2000);
+
+          lcd.clear();
+          lcd.setCursor(0,0);
+          lcd.print(" Reaction time: ");
+          lcd.setCursor(4,2);
+          lcd.print(reactieTijd);
+          lcd.setCursor(11,2);
+          lcd.print("MS"); //Show on the LCD who has won.
+
+          Animatie_scherm(21, 400);
+          Animatie_scherm(22, 400);
+          Animatie_scherm(23, 150);
+          Animatie_scherm(24, 150);
+          Animatie_scherm(25, 150);
+          Animatie_scherm(26, 150);
+          Animatie_scherm(27, 150);
+          Animatie_scherm(28, 150);
+          Animatie_scherm(29, 150);
+          Animatie_scherm(30, 150);
+        }
+        else{
+          lcd.clear();
+          lcd.setCursor(0,0);
+          lcd.print("   Nobody has   ");
+          lcd.setCursor(0,2);
+          lcd.print("    clicked!    ");
+          Animatie_scherm(Vol, 4000);
+        }
+        radio.flush_rx();
+        radio.flush_tx();
 
         aantalDrukken = 1; //terug naar start Menu
         activeren = LOW;
@@ -506,13 +522,7 @@ void menu()
       }
       break;
 
-      /*for (int i = 0; i <= e; i++) //loop door geklikt om te kijken of deze persoon al heeft geklikt.
-      {
-        if (geKlikt[i] == in[0]) //Als hij nog niet is geKlikt
-        {
-          fout = true //Als die fout is dan fout = true
-        }
-      }*/
+
 /************************************************************************************************/
 
       case 3: //Dobbelsteen
@@ -520,9 +530,9 @@ void menu()
       Serial.print("\n");
 
       lcd.setCursor(0,0);
-      lcd.print("Press middle to:");
+      lcd.print(" Press to play: ");
       lcd.setCursor(0,2);
-      lcd.print("  start game 2  ");
+      lcd.print(" Roll the dice  ");
 
       if(activeren == HIGH)
       {
@@ -545,144 +555,156 @@ void menu()
         //.....
         //(10010 - 10 = 10000) =< 10000 = true
         //(10011 - 10 = 10001) =< 10000 = false dus doorgaan.
+        bool tekst = true;
         int aangemeld[4]; //een array met 4 plekjes
-        int e = 0; //Voor het bijvoegen van dingen in het array
-        unsigned char adr;
+        int spelers = 0; //Voor het bijvoegen van dingen in het array
         long tijdTimer = 10000; //10 seconden wachten.
+        long tekstTijd = 1000; //Na 1 seconden moet de tekst weer op het scherm komen.
+        unsigned long tekstHuidig;
         unsigned long huidigeTijd = millis(); //tijd hoelang het programma al draait. Long omdat het om tijd gaat
         while (millis() - huidigeTijd < tijdTimer) //doe 10 seconden lang mensen toevoegen die mee willen doen.
         {
-         if (radio.available()) //als er iets binnenkomt.
-         {
-           Serial.print("Bericht binnen");
-           leesBericht(bericht); //Lees het inkomende bericht
-           aangemeld[e] = bericht.verzenderUID; //Elke keer als er iets binnenkomt dan wordt de waarde van de controller in de aangemelde array gegooid.
-           e++;
-           lcd.clear();
-           lcd.setCursor(0,0);
-           lcd.print("  Player: ");
-           lcd.setCursor(11,0);
-           lcd.print(bericht.verzenderUID);
-           lcd.setCursor(0,2);
-           lcd.print("     Added    ");
-
-           delay(500);
-
-           lcd.setCursor(0,0);
-           lcd.print("  Press to add  ");
-           lcd.setCursor(0,2);
-           lcd.print("your controller ");
-           //Doordat er bij de controller maar 1 keer gedrukt kan worden staat alles erin.
-         }
-        }
-
-        int spelers = e;
-        /*for (int i = 0; i < sizeof(aangemeld); i++) //Kan het variable van e ook gebruikt worden??
-        {
-          if (aangemeld[i] != 0)
+          if (millis() - tekstHuidig > tekstTijd && tekst == false) //Na 1 seconden laat zien dat iemand mag drukken.
           {
-             spelers++;
-          }
-        }*/
-
-        Serial.println(e); //testen
-        Serial.println(spelers); //testen
-        int rondes;
-        int points[4] = {};
-        char pointName[4] = {};
-        while (spelers != rondes) //Rondes hetzelfde als het aantal mensen dat had gedrukt?
-        {
-          for (int a = 0; a < spelers; a++) //loop van 0 tot het aantal mensen dat heeft gedrukt.
-          {
+            Serial.print("Reset bericht");
             lcd.clear();
             lcd.setCursor(0,0);
-            lcd.print(" Controller: ");
-            lcd.setCursor(14,0);
-            lcd.print(aangemeld[a]);
+            lcd.print("  Press to add  ");
             lcd.setCursor(0,2);
-            lcd.print("   can throw    ");
-            bericht.ontvangerUID = aangemeld[a]; //Geef door aan de controller dat die mag gooien
+            lcd.print("your controller ");
+            tekst = true;
+          }
+          if (radio.available()) //als er iets binnenkomt.
+          {
+             Serial.print("Bericht binnen");
+             leesBericht(bericht); //Lees het inkomende bericht
+             aangemeld[spelers] = bericht.verzenderUID; //Elke keer als er iets binnenkomt dan wordt de waarde van de controller in de aangemelde array gegooid.
+             spelers++;
+             lcd.clear();
+             lcd.setCursor(0,0);
+             lcd.print("  Player: ");
+             lcd.setCursor(11,0);
+             lcd.print(bericht.verzenderUID);
+             lcd.setCursor(0,2);
+             lcd.print("     Added    ");
 
-            stuurBericht(bericht); //Verstuur het bericht.
+             tekstHuidig = millis();
+             tekst = false;
+             /*
+             delay(500);
+             lcd.setCursor(0,0);
+             lcd.print("  Press to add  ");
+             lcd.setCursor(0,2);
+             lcd.print("your controller ");
+             */
+             //Doordat er bij de controller maar 1 keer gedrukt kan worden staat alles erin.
+          }
+        }
 
-            bool klik = false;
-            while (klik == false) //klik false?
+        if (spelers > 0) //Is er wel iemand die wil spelen?
+        {
+          int rondes = 0;
+          int points[4] = {};
+          int pointName[4] = {};
+          while (spelers != rondes) //Rondes hetzelfde als het aantal mensen dat had gedrukt?
+          {
+            for (int a = 0; a < spelers; a++) //loop van 0 tot het aantal mensen dat heeft gedrukt.
             {
-              if (radio.available()) //signaal binnen?
-              {
-                bool klaar = false;
-                leesBericht(bericht);
-                if (bericht.verzenderUID == aangemeld[a]) //Zelfde als degene die als eerste mocht gooien?
-                {
-                  int gooi = random(1,6); //maak een getal tussen de 1 en 6.
-                  points[a] = gooi; //De waarde van gooi in array points.
-                  pointName[a] = bericht.verzenderUID; //De controller naam van de gooier op dezelfde plek als de hoogste.
+              lcd.clear();
+              lcd.setCursor(0,0);
+              lcd.print(" Controller: ");
+              lcd.setCursor(14,0);
+              lcd.print(aangemeld[a]);
+              lcd.setCursor(0,2);
+              lcd.print("   can throw    ");
+              bericht.ontvangerUID = aangemeld[a]; //Geef door aan de controller dat die mag gooien
 
-                  klik = true;
+              stuurBericht(bericht); //Verstuur het bericht.
+
+
+              tijdTimer = 7000; //7 seconden wachten.
+              huidigeTijd = millis();
+              while (millis() - huidigeTijd < tijdTimer)//wacht voor 7 seconden
+              {
+                if (radio.available()) //signaal binnen?
+                {
+                  leesBericht(bericht);
+                  if (bericht.verzenderUID == aangemeld[a]) //Zelfde als degene die als eerste mocht gooien?
+                  {
+                    int gooi = random(1,6); //maak een getal tussen de 1 en 6.
+                    points[a] = gooi; //De waarde van gooi in array points.
+                    pointName[a] = bericht.verzenderUID; //De controller naam van de gooier op dezelfde plek als de hoogste.
+                    tijdTimer = 0;
+                  }
                 }
               }
+              rondes++; //Langs alle spelers gaan.
+              Serial.println(rondes);
             }
           }
-          rondes++; //Langs alle spelers gaan.
-        }
 
-        int aantal1, aantal2, aantal;
-        aantal1 = max(points[0], points[1]); //Max van deze twee in aantal1;
-        aantal2 = max(points[2], points[3]); //Max van deze twee in aantal2;
-        aantal = max(aantal1, aantal2); //max van de 4 in aantal.
-        Serial.println(aantal);
-        int winner/*[4] = {}*/;
-        int b;
-        for (int a = 0; a < 4; a++) //ga voor 4 keer kijken welk nummer het hoogste is.
-        {
-          /*if (points[a] == winner) //is er nog een keer de waarde van de winnaar?
+          int aantal1, aantal2, aantal;
+          aantal1 = max(points[0], points[1]); //Max van deze twee in aantal1;
+          aantal2 = max(points[2], points[3]); //Max van deze twee in aantal2;
+          aantal = max(aantal1, aantal2); //max van de 4 in aantal.
+          Serial.println(aantal);
+          int winner/*[4] = {}*/;
+          int b;
+          for (int a = 0; a < 4; a++) //ga voor 4 keer kijken welk nummer het hoogste is.
           {
-            b++
-          }*/
+            /*if (points[a] == winner) //is er nog een keer de waarde van de winnaar?
+            {
+              b++
+            }*/
 
-          if (points[a] == aantal) //komt de waarde overeen met het getal in het array.
-          {
-            winner/*[b]*/ = a; //de waarde van a in winnaar stoppen.
+            if (points[a] == aantal) //komt de waarde overeen met het getal in het array.
+            {
+              winner/*[b]*/ = a; //de waarde van a in winnaar stoppen.
+            }
+            //winner kan nu zijn {2,4,0,0} Controller 2 en 4 zijn dus dubbel en moeten nog een keer.
           }
-          //winner kan nu zijn {2,4,0,0} Controller 2 en 4 zijn dus dubbel en moeten nog een keer.
+          lcd.clear();
+          lcd.setCursor(0,0);
+          lcd.print("    Who has    ");
+          lcd.setCursor(0,2);
+          lcd.print("    Won????    ");
+          delay(2000);
+          /*
+          De naam van de winnaar wordt uit het array gehaald.
+          pointName[0,3,2,0]
+          points[0,1,6,0]
+          Controller 2 is de winnaar met 6 punten.
+          */
+
+          lcd.clear();
+          lcd.setCursor(0,0);
+          lcd.print("Controller   won");
+          lcd.setCursor(11,0);
+          lcd.print(pointName[winner]);
+          lcd.setCursor(0,2);
+          lcd.print(" With   Points ");
+          lcd.setCursor(6,2);
+          lcd.print(points[winner]);
+
+          bericht.ontvangerUID = pointName[winner]; //de Winnaar wordt gestopt in ontvangerUID.
         }
-        lcd.clear();
-        lcd.setCursor(0,0);
-        lcd.print("    Who has    ");
-        lcd.setCursor(0,2);
-        lcd.print("    Won????    ");
-        delay(2000);
-        /*
-        De naam van de winnaar wordt uit het array gehaald.
-        pointName[0,3,2,0]
-        points[0,1,6,0]
-        Controller 2 is de winnaar met 6 punten.
-        */
-        lcd.clear();
-        Serial.println("Speler ");
-        Serial.print(pointName[winner]);
-        Serial.print("has won with: ");
-        Serial.print(points[winner]);
-        Serial.print("points\n");
+        else {
+          lcd.clear();
+          lcd.setCursor(0,0);
+          lcd.print("  Nobody wants  ");
+          lcd.setCursor(0,2);
+          lcd.print("    to play!    ");
+          bericht.ontvangerUID = 0;
+        }
 
-        lcd.clear();
-        lcd.setCursor(0,0);
-        lcd.print("Controller   won");
-        lcd.setCursor(12,0);
-        lcd.print(pointName[winner]);
-
-        lcd.setCursor(0,2);
-        lcd.print(" With   Points ");
-        lcd.setCursor(6,2);
-        lcd.print(points[winner]);
-
-        bericht.ontvangerUID = pointName[winner]; //de Winnaar wordt gestopt in ontvangerUID.
-        bericht.command = '3';
+        bericht.command = '4';
         bericht.alleCons = 1; //Alle controllers moeten dit commando aannemen.
         stuurBericht(bericht); //Verstuur het bericht.
         bericht.alleCons = 0; //Zet alle controllers uit.
 
-        delay(5000);
+        delay(4000);
+        radio.flush_rx();
+        radio.flush_tx();
         aantalDrukken = 1; //terug naar start Menu
         lcd.clear();
         activeren = LOW;
@@ -691,37 +713,189 @@ void menu()
 
 /************************************************************************************************/
 
-      case 4:
+      case 4: //Clicking till you die.
       Serial.print("Menu 4");
       Serial.print("\n");
 
       lcd.setCursor(0,0);
-      lcd.print("Press middle to:");
+      lcd.print(" Press to play: ");
       lcd.setCursor(0,2);
-      lcd.print("  start game 3  ");
+      lcd.print(" Clicking bomb  ");
 
       if(activeren == HIGH)
       {
-       Serial.print("4 actief");
-       Serial.print("\n");
-       lcd.setCursor(0,2);
-       lcd.print("  game 3 actief ");
+         lcd.setCursor(0,0);
+         lcd.print("Press until dead");
+         lcd.setCursor(0,2);
+         lcd.print("     Active     ");
 
-       //radio.begin(); //start de zender
-       //radio.openWritingPipe(control1); //init waar de zender naartoe moet verzenden.
-       radio.stopListening(); //door te stoppen met luisteren wordt het een zender.
+         bericht.command = '3'; //command 1 tells the cons that game 3 starts.
+         stuurBericht(bericht); //Verstuur het bericht.
+         lcd.clear();
+         lcd.setCursor(0,0);
+         lcd.print("  Press to add  ");
+         lcd.setCursor(0,2);
+         lcd.print("your controller ");
 
-       const char text[] = "3"; //maak een array met karakters genaamd text. Stop hierin "Hello World".
-       radio.write(&text, sizeof(text)); //verstuur de data in de text.
+         bool tekst = true;
+         int aangemeld[4]; //een array met 4 plekjes
+         int a = 0; //Voor het bijvoegen van dingen in het array
+         long tekstTijd = 1000; //Na 1 seconden moet de tekst weer op het scherm komen.
+         unsigned long tekstHuidig;
+         long tijdTimer = 10000; //10 seconden wachten.
+         unsigned long huidigeTijd = millis(); //tijd hoelang het programma al draait. Long omdat het om tijd gaat
+         while (millis() - huidigeTijd < tijdTimer) //doe 10 seconden lang mensen toevoegen die mee willen doen.
+         {
+           if (millis() - tekstHuidig > tekstTijd && tekst == false) //Na 1 seconden laat zien dat iemand mag drukken.
+           {
+             Serial.print("Reset bericht");
+             lcd.clear();
+             lcd.setCursor(0,0);
+             lcd.print("  Press to add  ");
+             lcd.setCursor(0,2);
+             lcd.print("your controller ");
+             tekst = true;
+           }
 
-       delay(1000);
-       aantalDrukken = 1; //terug naar start Menu
-       lcd.clear();
-       activeren = LOW;
-      }
-      break;
+           if (radio.available()) //als er iets binnenkomt.
+           {
+             Serial.println("Bericht binnen");
+             leesBericht(bericht); //Lees het inkomende bericht
+             aangemeld[a] = bericht.verzenderUID; //Elke keer als er iets binnenkomt dan wordt de waarde van de controller in de aangemelde array gegooid.
+             a++;
+             lcd.clear();
+             lcd.setCursor(0,0);
+             lcd.print("  Player: ");
+             lcd.setCursor(11,0);
+             lcd.print(bericht.verzenderUID);
+             lcd.setCursor(0,2);
+             lcd.print("     Added    ");
+
+             tekstHuidig = millis();
+             tekst = false;
+             //Doordat er bij de controller maar 1 keer gedrukt kan worden staat alles erin.
+           }
+         }
+
+
+
+         int rondes = random(1, 21); //Maak een random getal tussen de 1 en 20
+         int rondesKlaar = 0;
+         int spelersCheck = 0;
+         int spelers = a;
+         int pointName[4] = {};
+
+
+         if (spelers > 0) //Zijn er wel spelers??
+         {
+           while (rondesKlaar != rondes) //Rondes hetzelfde als het aantal mensen dat had gedrukt?
+           {
+             delay(500);
+             Serial.print("rondesKlaar = ");
+             Serial.println(rondesKlaar);
+             Serial.print("spelersCheck = ");
+             Serial.println(spelersCheck);
+             Serial.print("spelers = ");
+             Serial.println(spelers);
+             if (spelers == spelersCheck) //Check of de spelers zijn geweest.
+             {
+               /*
+               1,2,3,4 -> 1,2,3  spelersCheck
+               1,2,3,4    5,6,7 verloren!
+               */
+               spelersCheck = 0;
+             }
+             bool klik = false;
+             lcd.clear();
+             lcd.setCursor(0,0);
+             lcd.print(" Controller: ");
+             lcd.setCursor(14,0);
+             lcd.print(aangemeld[spelersCheck]);
+             lcd.setCursor(0,2);
+             lcd.print("   can click!   ");
+             bericht.ontvangerUID = aangemeld[spelersCheck]; //Geef door aan de controller dat die mag gooien
+             stuurBericht(bericht);
+
+             tijdTimer = 7000; //7 seconden wachten.
+             huidigeTijd = millis();
+             while (millis() - huidigeTijd < tijdTimer)//wacht voor 7 seconden
+             {
+               if (radio.available()) //signaal binnen?
+               {
+                 Serial.println("SIGNAAL BINNEN");
+                 leesBericht(bericht);
+                 if (bericht.verzenderUID == aangemeld[spelersCheck]) //Zelfde als degene die als eerste mocht gooien?
+                 {
+                   Serial.println("CONTROLLER HEEFT GEGOOID");
+                   lcd.clear();
+                   lcd.setCursor(0,0);
+                   lcd.print(" Controller: ");
+                   lcd.setCursor(14,0);
+                   lcd.print(aangemeld[spelersCheck]);
+                   lcd.setCursor(0,2);
+                   lcd.print("   has clicked! ");
+                   tijdTimer = 0;
+                 }
+               }
+             }
+             spelersCheck++;
+             rondesKlaar++;
+           }
+           spelersCheck--; //Er moet altijd 1 af want als laatste wordt er 1 gegooid.
+
+           bericht.ontvangerUID = aangemeld[spelersCheck]; //de Winnaar wordt gestopt in ontvangerUID.
+           Serial.print("Controller die wint: ");
+           Serial.println(aangemeld[spelersCheck]);
+           bericht.command = '4';
+           bericht.alleCons = 1; //Alle controllers moeten dit commando aannemen.
+           stuurBericht(bericht); //Verstuur het bericht.
+           bericht.alleCons = 0; //Zet alle controllers uit.
+
+           lcd.clear();
+           lcd.setCursor(0,0);
+           lcd.print(" Controller: ");
+           lcd.setCursor(14,0);
+           lcd.print(aangemeld[spelersCheck]);
+           lcd.setCursor(0,2);
+           lcd.print("     LOST     ");
+           delay(2000);
+
+           lcd.clear();
+           lcd.setCursor(0,0);
+           lcd.print("    With:       ");
+           lcd.setCursor(10,0);
+           lcd.print(rondes);
+           lcd.setCursor(0,2);
+           lcd.print("     rounds!    ");
+           delay(2000);
+         }
+
+         else { //Niemand gegooid?
+           bericht.ontvangerUID = 0;
+           bericht.command = '4';
+           bericht.alleCons = 1; //Alle controllers moeten dit commando aannemen.
+           stuurBericht(bericht); //Verstuur het bericht.
+           bericht.alleCons = 0; //Zet alle controllers uit.
+
+           lcd.clear();
+           lcd.setCursor(0,0);
+           lcd.print("  Nobody wants  ");
+           lcd.setCursor(0,2);
+           lcd.print("    to play!    ");
+
+           delay (4000);
+         }
+
+         radio.flush_rx();
+         radio.flush_tx();
+
+         aantalDrukken = 1; //terug naar start Menu
+         lcd.clear();
+         activeren = LOW;
+        }
+        break;
      }
-    laatsteMenu = aantalDrukken;
+     laatsteMenu = aantalDrukken;
   }
 }
 
@@ -730,7 +904,7 @@ void menu()
 void tmp()
 {
   temp = analogRead(PT100);
-  //Serial.println(temp);
+  Serial.println(temp);
   // 0-5V komt binnen. 0= 0 graden en 5 = 100 graden. 5V is 1023.
   //om de waardes terug te brengen naar voltage moet er een berekening gedaan worden.
   int a = temp * (50 / 1023.0); //nu wordt de waarde van 1023 veranderd naar 0-100C
@@ -753,6 +927,43 @@ String lght()
     light = "Day";
   }
   return light;
+}
+
+void opstartProgramma(){
+    lght();
+    if (light == "Day") {
+      lcd.setCursor(0,2);
+      lcd.print("  Goodmorning   ");
+    }
+    else if (light == "Night") {
+      lcd.setCursor(0,2);
+      lcd.print("   Goodnight    ");
+    }
+    else {
+      lcd.setCursor(0,2);
+      lcd.print("  Daan & Emran  ");
+    }
+
+    lcd.setCursor(0,0);
+    lcd.print(" DaRan Console  ");
+
+    int a = 500;
+    for(int i = 0; i < 5; i++)
+    {
+      tone(buzz,a,150);
+      delay(150);
+      a = a + 100;
+    }
+    tone(buzz,1000,400);
+    delay(600);
+    tone(buzz,1000,150);
+    delay(250);
+    tone(buzz,1000,150);
+    delay(200);
+    tone(buzz,1000,600);
+    delay(600);
+    noTone(buzz);
+    lcd.clear();
 }
 
 void stuurBericht(t_message &msg)
