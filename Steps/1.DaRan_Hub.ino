@@ -188,11 +188,42 @@ const unsigned char An10[Num_Of_Word][32] =
   0xFF, 0xFF, 0xF1, 0xFE, 0xFF, 0xC1, 0xFE, 0xFF, 0xFC, 0xFB, 0xF6, 0xFE, 0xFD, 0xFD, 0xFD, 0xFD,
   0xD7, 0xD7, 0xD7, 0xD7, 0x57, 0x2F, 0x07, 0x7B, 0x6D, 0x16, 0xEB, 0xEB, 0xEB, 0xEF, 0xFF, 0xFF,
 };
+const unsigned char Dobbel1[Num_Of_Word][32] =
+{
+  0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFC, 0xFC, 0xFC, 0xFC, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+  0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x3F, 0x3F, 0x3F, 0x3F, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+};
+const unsigned char Dobbel2[Num_Of_Word][32] =
+{
+  0xFF, 0xFF, 0xC3, 0xC3, 0xC3, 0xC3, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+  0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xC3, 0xC3, 0xC3, 0xC3, 0xFF, 0xFF,
+};
+const unsigned char Dobbel3[Num_Of_Word][32] =
+{
+  0xFF, 0xFF, 0xC3, 0xC3, 0xC3, 0xC3, 0xFC, 0xFC, 0xFC, 0xFC, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+  0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x3F, 0x3F, 0x3F, 0x3F, 0xC3, 0xC3, 0xC3, 0xC3, 0xFF, 0xFF,
+};
+const unsigned char Dobbel4[Num_Of_Word][32] =
+{
+  0xFF, 0xFF, 0xC3, 0xC3, 0xC3, 0xC3, 0xFF, 0xFF, 0xFF, 0xFF, 0xC3, 0xC3, 0xC3, 0xC3, 0xFF, 0xFF,
+  0xFF, 0xFF, 0xC3, 0xC3, 0xC3, 0xC3, 0xFF, 0xFF, 0xFF, 0xFF, 0xC3, 0xC3, 0xC3, 0xC3, 0xFF, 0xFF,
+};
+const unsigned char Dobbel5[Num_Of_Word][32] =
+{
+  0xFF, 0xFF, 0xC3, 0xC3, 0xC3, 0xC3, 0xFC, 0xFC, 0xFC, 0xFC, 0xC3, 0xC3, 0xC3, 0xC3, 0xFF, 0xFF,
+  0xFF, 0xFF, 0xC3, 0xC3, 0xC3, 0xC3, 0x3F, 0x3F, 0x3F, 0x3F, 0xC3, 0xC3, 0xC3, 0xC3, 0xFF, 0xFF,
+};
+const unsigned char Dobbel6[Num_Of_Word][32] =
+{
+  0xFF, 0xC3, 0xC3, 0xC3, 0xC3, 0xFF, 0xC3, 0xC3, 0xC3, 0xC3, 0xFF, 0xC3, 0xC3, 0xC3, 0xC3, 0xFF,
+  0xFF, 0xC3, 0xC3, 0xC3, 0xC3, 0xFF, 0xC3, 0xC3, 0xC3, 0xC3, 0xFF, 0xC3, 0xC3, 0xC3, 0xC3, 0xFF,
+};
 const unsigned char Vol[Num_Of_Word][32] =
 {
   0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
   0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 };
+
 
 
 unsigned char Display_Buffer[8];
@@ -206,7 +237,7 @@ uint8_t adresCon[] = {0x01, 0xCE, 0xCC, 0xCE, 0xCC}; //Het adres voor alle contr
 
 // ----- Declare Objects -----
 LiquidCrystal_I2C lcd(0x27, 2, 1, 0, 4, 5, 6, 7, 3, POSITIVE); //voor lcd
-RF24 radio(9, 8);  // CE, CSN Dit is nodig voor de library om te kijken welke pinnen de zender is aangesloten.
+RF24 radio(8, 9);  // CE, CSN Dit is nodig voor de library om te kijken welke pinnen de zender is aangesloten.
 
 // ----- Declare subroutines and/or functions -----
 
@@ -307,14 +338,17 @@ void loop()
       }
       break;
 
-     case 3:
-     activeren = HIGH;
-     break;
+      case 3:
+      activeren = HIGH;
+      break;
     }
     isGedrukt = LOW;
   }
+  if(isGedrukt == LOW)
+  {
+    Animatie_scherm(aantalDrukken, 200);
+  }
   menu();
-  delay(200);
 }
 
 void menu()
@@ -390,29 +424,13 @@ void menu()
         lcd.print("Fastest Presser ");
         lcd.setCursor(0,2);
         lcd.print("     Active     ");
+        delay(1000);
 
         bericht.command = '1'; //command 1 tells the cons that game 1 starts.
         stuurBericht(bericht); //Verstuur het bericht.
         bericht.ontvangerUID = 0;
 
         lcd.clear();
-        //16x16 dot display = "3"
-        //16x16 dot display = "3"
-        lcd.setCursor(8,0);
-        lcd.print("3");
-        Animatie_scherm(3, 1000);
-
-        //16x16 dot display = "2"
-        lcd.setCursor(8,0);
-        lcd.print("2");
-        Animatie_scherm(2, 1000);
-
-        //16x16 dot display = "1"
-        lcd.setCursor(8,0);
-        lcd.print("1");
-        Animatie_scherm(1, 1000);
-
-        //16x16 dot display = "Timer start"
         lcd.setCursor(0,0);
         lcd.print("      WAIT!     ");
         lcd.setCursor(0,2);
@@ -571,7 +589,12 @@ void menu()
         //.....
         //(10010 - 10 = 10000) =< 10000 = true
         //(10011 - 10 = 10001) =< 10000 = false dus doorgaan.
+        int naamWinnaar;
+        int puntenWinnaar;
         bool tekst = true;
+        int i = 1;
+        unsigned long anTijd = 1000;
+        unsigned long anHuidigeTijd = millis();
         int aangemeld[4]; //een array met 4 plekjes
         int spelers = 0; //Voor het bijvoegen van dingen in het array
         long tijdTimer = 10000; //10 seconden wachten.
@@ -590,9 +613,23 @@ void menu()
             lcd.print("your controller ");
             tekst = true;
           }
-          if (!radio.available() && tekst == false) //Zoalg tekst nog false is en er geen data binnenkomt laat zien wie heeft gedrukt.
+          if (!radio.available()) //Zolang er geen data binnenkomt doe een animatie.
           {
-            Animatie_scherm(bericht.verzenderUID, 1);
+            if (tekst == false)
+            {
+              Animatie_scherm(bericht.verzenderUID, 1);
+            }
+            if(millis() - anHuidigeTijd > anTijd && tekst == true) // Elke seconden hierin.
+            {
+              anHuidigeTijd = millis();
+              if(i < 4){
+                i++;
+              }
+              else {
+                i = 1;
+              }
+              Animatie_scherm(i, 1);
+            }
           }
           if (radio.available()) //als er iets binnenkomt.
           {
@@ -610,14 +647,6 @@ void menu()
 
              tekstHuidig = millis();
              tekst = false;
-             /*
-             delay(500);
-             lcd.setCursor(0,0);
-             lcd.print("  Press to add  ");
-             lcd.setCursor(0,2);
-             lcd.print("your controller ");
-             */
-             //Doordat er bij de controller maar 1 keer gedrukt kan worden staat alles erin.
           }
         }
 
@@ -641,11 +670,27 @@ void menu()
 
               stuurBericht(bericht); //Verstuur het bericht.
 
-
+              i = 1;
+              anTijd = 1000;
+              anHuidigeTijd = millis();
               tijdTimer = 7000; //7 seconden wachten.
               huidigeTijd = millis();
               while (millis() - huidigeTijd < tijdTimer)//wacht voor 7 seconden
               {
+                if (!radio.available()) //Zolang er geen data binnenkomt doe een animatie.
+                {
+                  if(millis() - anHuidigeTijd > anTijd) // Elke seconden hierin.
+                  {
+                    anHuidigeTijd = millis();
+                    if(i < 4){
+                      i++;
+                    }
+                    else {
+                      i = 1;
+                    }
+                    Animatie_scherm(i, 1);
+                  }
+                }
                 if (radio.available()) //signaal binnen?
                 {
                   leesBericht(bericht);
@@ -655,6 +700,14 @@ void menu()
                     points[a] = gooi; //De waarde van gooi in array points.
                     pointName[a] = bericht.verzenderUID; //De controller naam van de gooier op dezelfde plek als de hoogste.
                     tijdTimer = 0;
+                    long t = 100;
+                    for (int a = 1; a != 9; a++) //Door random dobbelstenen gaan.
+                    {
+                      int g = random(1,6);
+                      t + 100;
+                      Dobbelsteen_scherm(g, t);
+                    }
+                    Animatie_scherm(Vol, 2000);
                   }
                 }
               }
@@ -672,11 +725,6 @@ void menu()
           int b;
           for (int a = 0; a < 4; a++) //ga voor 4 keer kijken welk nummer het hoogste is.
           {
-            /*if (points[a] == winner) //is er nog een keer de waarde van de winnaar?
-            {
-              b++
-            }*/
-
             if (points[a] == aantal) //komt de waarde overeen met het getal in het array.
             {
               winner/*[b]*/ = a; //de waarde van a in winnaar stoppen.
@@ -689,23 +737,18 @@ void menu()
           lcd.setCursor(0,2);
           lcd.print("    Won????    ");
           delay(2000);
+          for (int a = 1; a != 9; a++) //Voor 2 seconden een wacht animatie.
+          {
+            Animatie_scherm(a, 250);
+          }
           /*
           De naam van de winnaar wordt uit het array gehaald.
           pointName[0,3,2,0]
           points[0,1,6,0]
           Controller 2 is de winnaar met 6 punten.
           */
-
-          lcd.clear();
-          lcd.setCursor(0,0);
-          lcd.print("Controller   won");
-          lcd.setCursor(11,0);
-          lcd.print(pointName[winner]);
-          lcd.setCursor(0,2);
-          lcd.print(" With   Points ");
-          lcd.setCursor(6,2);
-          lcd.print(points[winner]);
-
+          pointName[winner] = naamWinnaar;
+          points[winner] = puntenWinnaar;
           bericht.ontvangerUID = pointName[winner]; //de Winnaar wordt gestopt in ontvangerUID.
         }
         else {
@@ -722,7 +765,20 @@ void menu()
         stuurBericht(bericht); //Verstuur het bericht.
         bericht.alleCons = 0; //Zet alle controllers uit.
 
-        delay(4000);
+        lcd.setCursor(0,2);
+        lcd.print(" With   Points ");
+        lcd.setCursor(6,2);
+        lcd.print(puntenWinnaar);
+
+        Animatie_scherm(puntenWinnaar, 2000);
+
+        lcd.clear();
+        lcd.setCursor(0,0);
+        lcd.print("Controller   won");
+        lcd.setCursor(11,0);
+        lcd.print(naamWinnaar);
+
+        Animatie_scherm(naamWinnaar, 2000);
         radio.flush_rx();
         radio.flush_tx();
         aantalDrukken = 1; //terug naar start Menu
@@ -757,6 +813,10 @@ void menu()
          lcd.setCursor(0,2);
          lcd.print("your controller ");
 
+         int i = 1;
+         unsigned long anTijd = 1000;
+         unsigned long anHuidigeTijd = millis();
+
          bool tekst = true;
          int aangemeld[4]; //een array met 4 plekjes
          int a = 0; //Voor het bijvoegen van dingen in het array
@@ -777,9 +837,23 @@ void menu()
              tekst = true;
            }
 
-           if (!radio.available() && tekst == false) //Zoalg tekst nog false is en er geen data binnenkomt laat zien wie heeft gedrukt.
+           if (!radio.available()) //Zolang er geen data binnenkomt doe een animatie.
            {
-             Animatie_scherm(bericht.verzenderUID, 1);
+             if (tekst == false)
+             {
+               Animatie_scherm(bericht.verzenderUID, 1);
+             }
+             if(millis() - anHuidigeTijd > anTijd && tekst == true) // Elke seconden hierin.
+             {
+               anHuidigeTijd = millis();
+               if(i < 4){
+                 i++;
+               }
+               else {
+                 i = 1;
+               }
+               Animatie_scherm(i, 1);
+             }
            }
 
            if (radio.available()) //als er iets binnenkomt.
@@ -810,18 +884,12 @@ void menu()
          int spelers = a;
          int pointName[4] = {};
 
-
          if (spelers > 0) //Zijn er wel spelers??
          {
+           int r = 1;
            while (rondesKlaar != rondes) //Rondes hetzelfde als het aantal mensen dat had gedrukt?
            {
-             delay(500);
-             Serial.print("rondesKlaar = ");
-             Serial.println(rondesKlaar);
-             Serial.print("spelersCheck = ");
-             Serial.println(spelersCheck);
-             Serial.print("spelers = ");
-             Serial.println(spelers);
+             Animatie_scherm(r, 500);
              if (spelers == spelersCheck) //Check of de spelers zijn geweest.
              {
                /*
@@ -845,6 +913,10 @@ void menu()
              huidigeTijd = millis();
              while (millis() - huidigeTijd < tijdTimer)//wacht voor 7 seconden
              {
+               if (!radio.available())
+               {
+                 Animatie_scherm(r, 1);
+               }
                if (radio.available()) //signaal binnen?
                {
                  Serial.println("SIGNAAL BINNEN");
@@ -860,6 +932,7 @@ void menu()
                    lcd.setCursor(0,2);
                    lcd.print("   has clicked! ");
                    tijdTimer = 0;
+                   r++;
                  }
                }
              }
@@ -869,7 +942,7 @@ void menu()
            spelersCheck--; //Er moet altijd 1 af want als laatste wordt er 1 gegooid.
 
            bericht.ontvangerUID = aangemeld[spelersCheck]; //de Winnaar wordt gestopt in ontvangerUID.
-           Serial.print("Controller die wint: ");
+           Serial.print("Controller die heeft verloren: ");
            Serial.println(aangemeld[spelersCheck]);
            bericht.command = '4';
            bericht.alleCons = 1; //Alle controllers moeten dit commando aannemen.
@@ -878,21 +951,21 @@ void menu()
 
            lcd.clear();
            lcd.setCursor(0,0);
-           lcd.print(" Controller: ");
-           lcd.setCursor(14,0);
-           lcd.print(aangemeld[spelersCheck]);
-           lcd.setCursor(0,2);
-           lcd.print("     LOST     ");
-           delay(2000);
-
-           lcd.clear();
-           lcd.setCursor(0,0);
            lcd.print("    With:       ");
            lcd.setCursor(10,0);
            lcd.print(rondes);
            lcd.setCursor(0,2);
            lcd.print("     rounds!    ");
-           delay(2000);
+           Animatie_scherm(rondes, 2000);
+
+           lcd.clear();
+           lcd.setCursor(0,0);
+           lcd.print(" Controller: ");
+           lcd.setCursor(14,0);
+           lcd.print(aangemeld[spelersCheck]);
+           lcd.setCursor(0,2);
+           lcd.print("     LOST     ");
+           Animatie_scherm(bericht.ontvangerUID, 2000);
          }
 
          else { //Niemand gegooid?
@@ -1006,7 +1079,6 @@ bool leesBericht(t_message &msg)
 /*************************************************16x16**************************************************************/
 void Clear_Display()
 {
-  Serial.println("Scherm wordt gecleared");
   unsigned char i, j;
   for (i = 0 ; i < 32 ; i++)
   {
@@ -1392,5 +1464,60 @@ void Animatie_scherm(int A, long tijdTimer)
       Display(An10);
      }
      break;
+  }
+}
+
+void Dobbelsteen_scherm(int A, long tijdTimer)
+{
+  long huidigeTijd;
+  switch (A)
+  {
+    case 1:
+    huidigeTijd = millis(); //tijd hoelang het programma al draait. Long omdat het om tijd gaat
+    while (millis() - huidigeTijd < tijdTimer) //doe voor het aantal seconden alles wat in de while staat.
+    {
+     Display(Dobbel1);
+    }
+    break;
+
+    case 2:
+    huidigeTijd = millis(); //tijd hoelang het programma al draait. Long omdat het om tijd gaat
+    while (millis() - huidigeTijd < tijdTimer) //doe voor het aantal seconden alles wat in de while staat.
+    {
+     Display(Dobbel2);
+    }
+    break;
+
+    case 3:
+    huidigeTijd = millis(); //tijd hoelang het programma al draait. Long omdat het om tijd gaat
+    while (millis() - huidigeTijd < tijdTimer) //doe voor het aantal seconden alles wat in de while staat.
+    {
+     Display(Dobbel3);
+    }
+    break;
+
+    case 4:
+    huidigeTijd = millis(); //tijd hoelang het programma al draait. Long omdat het om tijd gaat
+    while (millis() - huidigeTijd < tijdTimer) //doe voor het aantal seconden alles wat in de while staat.
+    {
+     Display(Dobbel4);
+    }
+    break;
+
+    case 5:
+    huidigeTijd = millis(); //tijd hoelang het programma al draait. Long omdat het om tijd gaat
+    while (millis() - huidigeTijd < tijdTimer) //doe voor het aantal seconden alles wat in de while staat.
+    {
+     Display(Dobbel5);
+    }
+    break;
+
+    case 6:
+    huidigeTijd = millis(); //tijd hoelang het programma al draait. Long omdat het om tijd gaat
+    while (millis() - huidigeTijd < tijdTimer) //doe voor het aantal seconden alles wat in de while staat.
+    {
+     Display(Dobbel6);
+    }
+    break;
   }
 }

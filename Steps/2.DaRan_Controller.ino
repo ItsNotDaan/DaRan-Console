@@ -146,7 +146,7 @@ void loop()
 
 
     /***********************************************************************************************/
-    else if (text == '2') //Start game 2 Not important now.
+    else if (text == '2') //Start game 2
     {
       Serial.println("Game 2 starts");
       //(11 - 10 = 1) < 10000 =  true
