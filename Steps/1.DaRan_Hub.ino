@@ -243,7 +243,7 @@ RF24 radio(8, 9);  // CE, CSN Dit is nodig voor de library om te kijken welke pi
 
 
 // ----- Declare Global Variables -----
-int buzz = 23;
+int buzz = 10;
 int aantalDrukken = 1; //het aantal keer drukken staat standaard op 0 dus beginscherm.
 int laatsteMenu = 0; //de plek waar het menu voor het laatste was.
 int laatsteDruk = 1; // laatste case
@@ -696,18 +696,26 @@ void menu()
                   leesBericht(bericht);
                   if (bericht.verzenderUID == aangemeld[a]) //Zelfde als degene die als eerste mocht gooien?
                   {
+                    lcd.clear();
+                    lcd.setCursor(0,0);
+                    lcd.print(" Controller: ");
+                    lcd.setCursor(14,0);
+                    lcd.print(aangemeld[a]);
+                    lcd.setCursor(0,2);
+                    lcd.print("   has throw    ");
+
                     int gooi = random(1,6); //maak een getal tussen de 1 en 6.
                     points[a] = gooi; //De waarde van gooi in array points.
                     pointName[a] = bericht.verzenderUID; //De controller naam van de gooier op dezelfde plek als de hoogste.
                     tijdTimer = 0;
                     long t = 100;
-                    for (int a = 1; a != 9; a++) //Door random dobbelstenen gaan.
+                    for (int a = 1; a != 10; a++) //Door random dobbelstenen gaan.
                     {
                       int g = random(1,6);
                       t + 100;
                       Dobbelsteen_scherm(g, t);
                     }
-                    Animatie_scherm(Vol, 2000);
+                    //Animatie_scherm(Vol, 2000);
                   }
                 }
               }
@@ -736,7 +744,7 @@ void menu()
           lcd.print("    Who has    ");
           lcd.setCursor(0,2);
           lcd.print("    Won????    ");
-          delay(2000);
+          //delay(2000);
           for (int a = 1; a != 9; a++) //Voor 2 seconden een wacht animatie.
           {
             Animatie_scherm(a, 250);
@@ -747,8 +755,8 @@ void menu()
           points[0,1,6,0]
           Controller 2 is de winnaar met 6 punten.
           */
-          pointName[winner] = naamWinnaar;
-          points[winner] = puntenWinnaar;
+          naamWinnaar = pointName[winner];
+          puntenWinnaar = points[winner];
           bericht.ontvangerUID = pointName[winner]; //de Winnaar wordt gestopt in ontvangerUID.
         }
         else {
@@ -765,12 +773,15 @@ void menu()
         stuurBericht(bericht); //Verstuur het bericht.
         bericht.alleCons = 0; //Zet alle controllers uit.
 
-        lcd.setCursor(0,2);
+        lcd.clear();
+        lcd.setCursor(0,0);
         lcd.print(" With   Points ");
-        lcd.setCursor(6,2);
+        lcd.setCursor(6,0);
         lcd.print(puntenWinnaar);
 
         Animatie_scherm(puntenWinnaar, 2000);
+        //delay(2000);
+
 
         lcd.clear();
         lcd.setCursor(0,0);
@@ -779,6 +790,7 @@ void menu()
         lcd.print(naamWinnaar);
 
         Animatie_scherm(naamWinnaar, 2000);
+        //delay(2000);
         radio.flush_rx();
         radio.flush_tx();
         aantalDrukken = 1; //terug naar start Menu
@@ -1002,11 +1014,11 @@ void menu()
 void tmp()
 {
   temp = analogRead(PT100);
-  Serial.println(temp);
   // 0-5V komt binnen. 0= 0 graden en 5 = 100 graden. 5V is 1023.
   //om de waardes terug te brengen naar voltage moet er een berekening gedaan worden.
   int a = temp * (50 / 1023.0); //nu wordt de waarde van 1023 veranderd naar 0-100C
   temp = round(a);
+  Serial.println(temp);
   //temp = 19;
   return temp;
 }
