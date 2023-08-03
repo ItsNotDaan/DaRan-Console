@@ -1,6 +1,6 @@
 # DaRan-Console
 
-This is a project that I and a other student have to do for our exams. 
+This is a project that I and another student have to do for our exams. 
 
 It will be a Console with at least two controllers and one hub. 
 
